@@ -7,7 +7,7 @@ import { notifyUsage } from "@/app/usage-meter";
 
 /**
  * A practice session: questions for the given concepts (or your weakest ones), then due flashcards.
- * Open answers are graded by Claude; multiple choice is checked instantly.
+ * Open answers are graded by the AI; multiple choice is checked instantly.
  */
 export default function Practice({ documentId, conceptIds }: { documentId?: string; conceptIds: number[] }) {
   const [mode, setMode] = useState<"questions" | "cards">("questions");

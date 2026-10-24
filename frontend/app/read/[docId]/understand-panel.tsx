@@ -34,7 +34,7 @@ export default function UnderstandTab({ docId, page, prefs, selection, selection
   const url = `${API}/documents/${docId}/pages/${page}/understand?lang=${prefs.lang}&style=${prefs.style}`;
 
   // Auto-explain after the page has been open for a moment, so flipping through pages costs nothing.
-  // Leaving the page (or changing language/style) cancels the stream, which also stops the Claude call.
+  // Leaving the page (or changing language/style) cancels the stream, which also stops the AI call.
   useEffect(() => {
     const t = prefs.auto ? setTimeout(() => startExplain(url), 1200) : undefined;
     return () => { clearTimeout(t); resetExplain(); };

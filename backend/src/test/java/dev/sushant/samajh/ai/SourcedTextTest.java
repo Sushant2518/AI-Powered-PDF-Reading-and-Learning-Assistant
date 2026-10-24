@@ -33,6 +33,28 @@ class SourcedTextTest {
     }
 
     @Test
+    void geminiGroundingKeepsOnlyTrustedSources() {
+        String answer = "## What's current\n* An IETF draft standardises the header. * A blog says it is magic.\n\n## In the real world\n* Stripe accepts idempotency keys.";
+        var chunks = List.of(
+                new SourcedText.Chunk("https://vertexaisearch.cloud.google.com/redirect/1", "datatracker.ietf.org"),
+                new SourcedText.Chunk("https://vertexaisearch.cloud.google.com/redirect/2", "random-blog.com"),
+                new SourcedText.Chunk("https://vertexaisearch.cloud.google.com/redirect/3", "docs.stripe.com"));
+        var supports = List.of(
+                new SourcedText.Support("An IETF draft standardises the header.", List.of(0, 1)),
+                new SourcedText.Support("A blog says it is magic.", List.of(1)),        // untrusted only → hidden
+                new SourcedText.Support("Stripe accepts idempotency keys.", List.of(2)));
+        SourcedText r = SourcedText.fromGrounding(answer, chunks, supports, List.of("ietf.org", "stripe.com"));
+
+        assertEquals("""
+                ## What's current
+                * An IETF draft standardises the header. [1]
+                ## In the real world
+                * Stripe accepts idempotency keys. [2]""", r.markdown().replace("\n\n", "\n"));
+        assertEquals(List.of("datatracker.ietf.org", "docs.stripe.com"), r.sources().stream().map(Source::title).toList());
+        assertEquals(1, r.hidden());
+    }
+
+    @Test
     void nothingSourcedMeansEmpty() {
         SourcedText r = SourcedText.of(List.of(new Segment("I couldn't find anything reliable.", List.of())));
         assertTrue(r.isEmpty());

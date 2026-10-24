@@ -4,7 +4,7 @@ server:
 
 spring:
   application.name: samajh
-  config.import: optional:file:.env[.properties]   # ANTHROPIC_API_KEY=... (git-ignored)
+  config.import: optional:file:.env[.properties]   # GEMINI_API_KEY=... and/or ANTHROPIC_API_KEY=... (git-ignored)
   web.error.include-message: always   # our ResponseStatusException reasons are written for the UI
   jackson.deserialization.fail-on-null-for-primitives: false   # omitted boolean/int fields default to false/0
   datasource:
@@ -22,7 +22,12 @@ samajh:
   storage-dir: ./data/pdfs
   frontend-origin: http://localhost:3000
   ai:
-    # Haiku 5.5 for everything: ~$1 per 1,000 pages. For deeper answers switch to
+    # Provider (gemini | claude) and the Claude budget live in the settings table (Settings page).
+    gemini:
+      base-url: https://generativelanguage.googleapis.com
+      model: gemini-2.5-flash          # free tier
+      search-model: gemini-2.5-flash   # free Google Search grounding needs 2.5 Flash (or -lite)
+    # Claude: Haiku 5.5 for everything: ~$1 per 1,000 pages. For deeper answers switch to
     # claude-sonnet-5-5 (input 2.00 / output 10.00) or claude-opus-5-5 (4.00 / 20.00).
     model: claude-haiku-5-5
     # USD per million tokens for the model above (Haiku price for prompts up to 100K tokens)
@@ -33,8 +38,8 @@ samajh:
     fast-input-price: 0.10
     fast-output-price: 0.50
     web-search-price: 0.01   # USD per search ($10 per 1,000)
-    # The monthly budget lives in the settings table (Settings page).
-    # "Beyond the PDF" only searches these sites (subdomains included).
+    # "Beyond the PDF" only shows statements sourced from these sites (subdomains included).
+    # Claude searches only these; Gemini searches everywhere and other sites are filtered out.
     trusted-domains: >-
       developer.mozilla.org, w3.org, rfc-editor.org, ietf.org, owasp.org, nist.gov, cve.org, portswigger.net,
       docs.spring.io, spring.io, openjdk.org, docs.oracle.com, react.dev, nextjs.org, typescriptlang.org, nodejs.org,

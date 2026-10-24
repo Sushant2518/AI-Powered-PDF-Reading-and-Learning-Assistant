@@ -15,10 +15,16 @@ public record SourcedText(String markdown, List<Source> sources, int hidden) {
 
     public record Source(int n, String url, String title) {}
 
-    /** One text block from Claude and the URLs it cites. */
+    /** A piece of answer text and the sources that support it (none = unsourced). */
     public record Segment(String text, List<Source> citations) {}
 
-    public static SourcedText from(List<ContentBlock> content) {
+    /** A Gemini grounding chunk (a web page) and a supported span of the answer. */
+    public record Chunk(String uri, String title) {}
+
+    public record Support(String text, List<Integer> chunkIndices) {}
+
+    /** Claude: text blocks carry their own web-search citations. */
+    public static SourcedText fromClaude(List<ContentBlock> content) {
         List<Segment> segments = new ArrayList<>();
         for (ContentBlock block : content) {
             block.text().ifPresent(t -> segments.add(new Segment(t.text(), t.citations().orElse(List.of()).stream()
@@ -27,6 +33,47 @@ public record SourcedText(String markdown, List<Source> sources, int hidden) {
                     .toList())));
         }
         return of(segments);
+    }
+
+    /**
+     * Gemini: the answer is plain text plus "supports" (spans) pointing at grounding chunks.
+     * Gemini's search can't be limited to sites, so only chunks on trusted domains count as sources here;
+     * spans supported only by other sites become unsourced and are hidden like any other unsourced text.
+     * Spans are located by their text (not offsets) to avoid byte-vs-character index mismatches.
+     */
+    public static SourcedText fromGrounding(String text, List<Chunk> chunks, List<Support> supports, List<String> trustedDomains) {
+        List<Segment> segments = new ArrayList<>();
+        int cursor = 0;
+        for (Support support : supports) {
+            int at = support.text() == null || support.text().isEmpty() ? -1 : text.indexOf(support.text(), cursor);
+            if (at < 0) continue;   // overlapping or not found: skip, the text stays unsourced
+            if (at > cursor) segments.add(new Segment(text.substring(cursor, at), List.of()));
+            List<Source> sources = support.chunkIndices().stream()
+                    .filter(i -> i >= 0 && i < chunks.size())
+                    .map(chunks::get)
+                    .filter(c -> trusted(domain(c), trustedDomains))
+                    .map(c -> new Source(0, c.uri(), domain(c)))
+                    .toList();
+            segments.add(new Segment(support.text(), sources));
+            cursor = at + support.text().length();
+        }
+        if (cursor < text.length()) segments.add(new Segment(text.substring(cursor), List.of()));
+        return of(segments);
+    }
+
+    /** Gemini's chunk title is the site's domain; the URI is often a redirect link. */
+    private static String domain(Chunk c) {
+        String title = c.title() == null ? "" : c.title().strip().toLowerCase();
+        if (title.contains(".") && !title.contains(" ")) return title.replaceFirst("^www\\.", "");
+        try {
+            return java.net.URI.create(c.uri()).getHost().toLowerCase().replaceFirst("^www\\.", "");
+        } catch (RuntimeException e) {
+            return "";
+        }
+    }
+
+    private static boolean trusted(String domain, List<String> trustedDomains) {
+        return !domain.isEmpty() && trustedDomains.stream().anyMatch(t -> domain.equals(t) || domain.endsWith("." + t));
     }
 
     static SourcedText of(List<Segment> segments) {
@@ -52,7 +99,11 @@ public record SourcedText(String markdown, List<Source> sources, int hidden) {
             }
             md.append(String.join("\n", kept));
         }
-        String markdown = dropEmptySections(md.toString().replaceAll("\n{3,}", "\n\n").strip());
+        String cleaned = md.toString()
+                .replaceAll("(?m)[ \\t]+[-*][ \\t]*$", "")                 // bullet marker left dangling after hidden text
+                .replaceAll("(?m)^[ \\t]*([-*]|\\d+\\.)[ \\t]*(\\n|$)", "")   // bullet with nothing left in it
+                .replaceAll("\\n{3,}", "\\n\\n").strip();
+        String markdown = dropEmptySections(cleaned);
         return new SourcedText(markdown, List.copyOf(byUrl.values()), hidden);
     }
 

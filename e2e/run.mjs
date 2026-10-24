@@ -1,8 +1,9 @@
 // The whole mastery loop in a real browser (Chrome DevTools Protocol, no extra dependencies):
 // upload → Understand → selection Explain → Deepen → note → Ask (+ Beyond) → Practice → Mastery.
+// Usage: node run.mjs <pdf> <out-dir> <gemini|claude>
 import fs from 'node:fs';
 
-const [, , pdfPath, outDir] = process.argv;
+const [, , pdfPath, outDir, provider = 'gemini'] = process.argv;
 const API = 'http://localhost:8080/api';
 const APP = 'http://localhost:3000';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -52,6 +53,11 @@ await send('Emulation.setDeviceMetricsOverride', { width: 1400, height: 900, dev
 
 // ---------- the flow ----------
 let docId;
+await step(`use ${provider} as the AI provider`, async () => {
+  const res = await fetch(`${API}/settings`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ provider, monthlyBudgetUsd: 5 }) });
+  if ((await res.json()).provider !== provider) throw new Error('provider not saved');
+});
+
 await step('upload and process a PDF', async () => {
   const body = new FormData();
   body.append('file', new Blob([fs.readFileSync(pdfPath)], { type: 'application/pdf' }), 'sample.pdf');
@@ -110,8 +116,8 @@ await step('Ask answers from the PDF and goes Beyond with sources', async () => 
   await sleep(100);
   await ev(`document.querySelector('aside form').requestSubmit()`);
   await waitFor(`document.querySelector('aside')?.innerText.includes('BEYOND THE PDF')`, 'beyond block');
-  await waitFor(`[...document.querySelectorAll('aside a[target=_blank]')].some(a => a.href.includes('stripe.com'))`, 'source link');
-  await shot('ask');
+  await waitFor(`document.querySelectorAll('aside a[target=_blank]').length > 0`, 'source link');
+  await shot(`ask-${provider}`);
 });
 
 await step('Practice: answer a question and see mastery change', async () => {
@@ -126,23 +132,26 @@ await step('Practice: answer a question and see mastery change', async () => {
     await click('main', 'Submit for grading');
   }
   await waitFor(`document.querySelector('main')?.innerText.includes('mastery')`, 'mastery before → after');
-  await shot('practice');
+  await shot(`practice-${provider}`);
 });
 
 await step('Mastery dashboard shows the practised concept', async () => {
   await open('/mastery');
   await waitFor(`document.querySelector('main')?.innerText.includes('Idempotence')`, 'concept in dashboard');
-  await shot('mastery');
+  await shot(`mastery-${provider}`);
 });
 
-await step('Settings page loads with the budget', async () => {
+await step('Settings page shows both providers', async () => {
   await open('/settings');
-  await waitFor(`document.querySelector('main')?.innerText.includes('Monthly Claude budget')`, 'budget setting');
+  await waitFor(`document.querySelector('main')?.innerText.includes('Gemini (free)') && document.querySelector('main')?.innerText.includes('Claude (paid)')`, 'provider options');
+  // The Claude budget only matters (and only shows) when Claude is the provider.
+  const budgetShown = await ev(`document.querySelector('main')?.innerText.includes('Monthly Claude budget')`);
+  if (budgetShown !== (provider === 'claude')) throw new Error(`budget field shown=${budgetShown} for ${provider}`);
 });
 
 if (errors.length) {
   console.log(`  ✗ ${errors.length} uncaught browser error(s):\n    ${errors.slice(0, 3).join('\n    ')}`);
   process.exit(1);
 }
-console.log(`  ${passed} steps passed`);
+console.log(`  ${passed} steps passed (${provider})`);
 process.exit(0);

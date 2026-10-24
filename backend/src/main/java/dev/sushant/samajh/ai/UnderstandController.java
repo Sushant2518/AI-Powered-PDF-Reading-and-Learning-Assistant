@@ -1,6 +1,5 @@
 package dev.sushant.samajh.ai;
 
-import com.anthropic.models.messages.OutputConfig;
 import dev.sushant.samajh.documents.Document;
 import dev.sushant.samajh.documents.DocumentRepository;
 import dev.sushant.samajh.documents.Page;
@@ -79,7 +78,7 @@ class UnderstandController {
             String user = Prompts.render("understand", Map.of(
                     "title", doc.getTitle(), "page", String.valueOf(n), "text", page.getText(),
                     "style", style.description, "native", nativeSection));
-            AiService.Result result = ai.stream("understand", Prompts.SYSTEM, user, OutputConfig.Effort.LOW, send);
+            AiService.Result result = ai.stream("understand", Prompts.SYSTEM, user, AiService.Effort.LOW, send);
             if ("end_turn".equals(result.stopReason())) {
                 jdbc.update("""
                         INSERT INTO page_ai (document_id, page_number, lang, style, content, model) VALUES (?, ?, ?, ?, ?, ?)
@@ -108,6 +107,6 @@ class UnderstandController {
                 "title", doc.getTitle(), "page", String.valueOf(req.page()), "text", page.getText(),
                 "selection", req.text(), "task", task,
                 "style", (req.style() == null ? Style.SIMPLE : req.style()).description));
-        return Sse.stream(send -> ai.stream("selection-" + req.action().name().toLowerCase(), Prompts.SYSTEM, user, OutputConfig.Effort.LOW, send));
+        return Sse.stream(send -> ai.stream("selection-" + req.action().name().toLowerCase(), Prompts.SYSTEM, user, AiService.Effort.LOW, send));
     }
 }

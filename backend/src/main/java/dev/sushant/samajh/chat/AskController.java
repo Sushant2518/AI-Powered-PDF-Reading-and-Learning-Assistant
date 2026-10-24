@@ -1,6 +1,5 @@
 package dev.sushant.samajh.chat;
 
-import com.anthropic.models.messages.OutputConfig;
 import com.fasterxml.jackson.annotation.JsonRawValue;
 import dev.sushant.samajh.ai.AiService;
 import dev.sushant.samajh.ai.Prompts;
@@ -115,7 +114,7 @@ class AskController {
                 .params(id, question, req.page(), req.quotedText()).update();
 
         return Sse.stream(out -> {
-            Answer answer = Answer.parse(ai.stream("ask", Prompts.SYSTEM, user, OutputConfig.Effort.LOW, out).text());
+            Answer answer = Answer.parse(ai.stream("ask", Prompts.SYSTEM, user, AiService.Effort.LOW, out).text());
             SourcedText beyond = null;
             if (req.allowBeyond() && !answer.beyondQuery().isEmpty()) {
                 out.event("beyond_searching", Map.of("query", answer.beyondQuery()));

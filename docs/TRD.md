@@ -138,21 +138,14 @@ Mastery is computed on read from attempts + flashcard reviews (`Mastery.java`, u
 
 ## 4. AI Design (Claude)
 
-### 4.1 Models (config, not code)
-**Default: Claude Haiku 5.5 for everything** ($0.10 / $0.50 per M tokens, about $1 per 1,000 explained pages). Budget $5/month.
+### 4.1 Providers and models (Settings → AI model)
+| Provider | Default model | Cost | Web search for Beyond |
+|---|---|---|---|
+| **Gemini (default)** | `gemini-2.5-flash` (`samajh.ai.gemini.model`, `search-model`) | Free tier: no card; per-minute/per-day limits; Google may use content | Google Search grounding (free on 2.5 Flash). Can't be limited to sites, so `SourcedText.fromGrounding` keeps only statements backed by trusted domains |
+| Claude | `claude-haiku-5-5` (`samajh.ai.model`; Sonnet/Opus for depth) | ~$1 per 1,000 pages; monthly budget in Settings | `web_search` tool with `allowed_domains`; fallback + `pause_turn` handled |
 
-| Setting (`application.yml`) | Default | Notes |
-|---|---|---|
-| `samajh.ai.model` | `claude-haiku-5-5` | Understand, Deepen, Beyond, Ask, grading. Switch to `claude-sonnet-5-5` ($2/$10) or `claude-opus-5-5` ($4/$20) for deeper answers; update the two prices next to it |
-| `samajh.ai.fast-model` | `claude-haiku-5-5` | Bulk generation (practice questions) |
-| `samajh.ai.monthly-budget-usd` | `5` | AI stops when reached |
-
-`AiService` adapts to the model:
-- Opus/Sonnet: server-side refusal **fallback** (`fallbacks: "default"`, beta `server-side-fallback-2026-07-01`) and the dynamic-filtering `web_search_20260209`.
-- Haiku: no fallback parameter (not supported) and the basic `web_search_20250305`.
-- `stop_reason` is always checked for `refusal`; depth is controlled by `effort`.
-
-**Biggest remaining cost is web search** ($0.01 per search, up to 5 per Beyond lookup), so Beyond only runs on demand and is cached per concept.
+Code: `AiService` (facade: settings, budget, usage log) → `AiProvider` → `GeminiClient` (plain REST: `generateContent`, `streamGenerateContent?alt=sse`, `responseJsonSchema` from `RecordSchema`, `thinkingBudget 0` for quick explanations, `inline_data` for OCR) or `ClaudeClient` (anthropic-java SDK).
+Errors are mapped to UI messages: missing/invalid key, free-tier limit (429), declined (safety), busy.
 
 ### 4.2 "From your PDF": page citations
 Pages are sent as a **custom-content document** (one content block per page) with `citations: {enabled: true}`. Each citation returns a `content_block_location` → mapped back to a page number. The UI shows "p. 42" chips.
@@ -365,8 +358,9 @@ frontend/
 | 4 | Beyond the PDF + Ask | ✅ Done |
 | 5 | Practice + flashcards + mastery | ✅ Done |
 | 6 | Polish: OCR, settings, dark/light, mobile, E2E (`e2e/run.sh`) | ✅ Done |
-| 7 | Local model (Ollama) | ❌ Built, then removed by decision: Claude only |
-| — | First real use with an API key on DDIA; prompt tuning | ⏳ Waiting for API key |
+| 7 | Local model (Ollama) | ❌ Built, then removed by decision |
+| 8 | Gemini free tier as provider (switch in Settings) | ✅ Done |
+| — | First real use with a Gemini key on DDIA; check grounding shape; prompt tuning | ⏳ Waiting for GEMINI_API_KEY |
 | R2 | Knowledge map, cross-PDF links, hands-on tasks, system design practice, gap finder | Later |
 
 **Add later only when needed:** pgvector (when cross-PDF search gets slow or poor), login (when deployed), S3 (when files no longer fit on disk).

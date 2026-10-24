@@ -34,8 +34,9 @@ export type Note = {
   createdAt: string;
 };
 
-export type Settings = { monthlyBudgetUsd: number; claudeModel: string; trustedDomains: string[] };
-export type Usage = { spentUsd: number; budgetUsd: number };
+export type Provider = "gemini" | "claude";
+export type Settings = { provider: Provider; monthlyBudgetUsd: number; claudeModel: string; geminiModel: string; trustedDomains: string[] };
+export type Usage = { provider: Provider; spentUsd: number; budgetUsd: number; geminiRequestsToday: number };
 
 export type Source = { n: number; url: string; title: string };
 export type Beyond = { content: string; sources: Source[]; hidden: number; accessedAt: string };
@@ -99,7 +100,7 @@ export const api = {
 
   ocr: (id: string, n: number) => call<PageText>(`/documents/${id}/pages/${n}/ocr`, { method: "POST" }),
   settings: () => call<Settings>("/settings"),
-  saveSettings: (s: Pick<Settings, "monthlyBudgetUsd">) => call<Settings>("/settings", json("PUT", s)),
+  saveSettings: (s: Pick<Settings, "provider" | "monthlyBudgetUsd">) => call<Settings>("/settings", json("PUT", s)),
   usage: () => call<Usage>("/usage"),
 
   concepts: (id: string, n: number) => call<Concept[]>(`/documents/${id}/pages/${n}/concepts`),

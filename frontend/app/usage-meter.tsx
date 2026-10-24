@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { api, type Usage } from "@/lib/api";
 
-/** Claude API spend this month. Refreshes whenever an AI call finishes (`ai-usage` window event). */
+/** Gemini requests today, or Claude spend this month. Refreshes whenever an AI call finishes (`ai-usage` window event). */
 export default function UsageMeter() {
   const [usage, setUsage] = useState<Usage | null>(null);
 
@@ -15,6 +15,9 @@ export default function UsageMeter() {
   }, []);
 
   if (!usage) return null;
+  if (usage.provider === "gemini") {
+    return <span className="text-xs text-muted" title="Gemini free tier: requests made today">Gemini · free · {usage.geminiRequestsToday} today</span>;
+  }
   const pct = Math.min(100, (100 * usage.spentUsd) / usage.budgetUsd);
   return (
     <span className="flex items-center gap-2 text-xs text-muted" title="Claude API spend this month">

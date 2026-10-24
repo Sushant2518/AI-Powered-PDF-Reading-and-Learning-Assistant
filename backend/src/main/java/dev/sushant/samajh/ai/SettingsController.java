@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-/** App settings (monthly budget) and this month's spend. */
+/** App settings (AI provider, Claude budget) and usage. */
 @RestController
 @RequestMapping("/api")
 class SettingsController {
@@ -20,33 +20,43 @@ class SettingsController {
     private final AiService ai;
     private final JdbcTemplate jdbc;
     private final String claudeModel;
+    private final String geminiModel;
     private final List<String> trustedDomains;
 
     SettingsController(AiService ai, JdbcTemplate jdbc,
                        @Value("${samajh.ai.model}") String claudeModel,
+                       @Value("${samajh.ai.gemini.model}") String geminiModel,
                        @Value("${samajh.ai.trusted-domains}") List<String> trustedDomains) {
         this.ai = ai;
         this.jdbc = jdbc;
         this.claudeModel = claudeModel;
+        this.geminiModel = geminiModel;
         this.trustedDomains = trustedDomains;
     }
 
     @GetMapping("/settings")
     Map<String, Object> get() {
-        return Map.of("monthlyBudgetUsd", ai.monthlyBudget(), "claudeModel", claudeModel, "trustedDomains", trustedDomains);
+        AiService.Settings s = ai.settings();
+        return Map.of("provider", s.provider(), "monthlyBudgetUsd", s.monthlyBudgetUsd(),
+                "claudeModel", claudeModel, "geminiModel", geminiModel, "trustedDomains", trustedDomains);
     }
 
     @PutMapping("/settings")
     Map<String, Object> update(@RequestBody AiService.Settings req) {
+        if (!"gemini".equals(req.provider()) && !"claude".equals(req.provider())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Provider must be gemini or claude");
+        }
         if (req.monthlyBudgetUsd() < 0 || req.monthlyBudgetUsd() > 1000) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Budget must be between $0 and $1000");
         }
-        jdbc.update("UPDATE settings SET monthly_budget_usd = ? WHERE id = 1", req.monthlyBudgetUsd());
+        jdbc.update("UPDATE settings SET provider = ?, monthly_budget_usd = ? WHERE id = 1", req.provider(), req.monthlyBudgetUsd());
         return get();
     }
 
     @GetMapping("/usage")
-    Map<String, Double> usage() {
-        return Map.of("spentUsd", ai.spentThisMonth(), "budgetUsd", ai.monthlyBudget());
+    Map<String, Object> usage() {
+        AiService.Settings s = ai.settings();
+        return Map.of("provider", s.provider(), "spentUsd", ai.spentThisMonth(), "budgetUsd", s.monthlyBudgetUsd(),
+                "geminiRequestsToday", ai.geminiRequestsToday());
     }
 }

@@ -21,7 +21,7 @@ export default function SettingsPage() {
     if (!server) return;
     setStatus("Saving…");
     try {
-      setServer(await api.saveSettings({ monthlyBudgetUsd: server.monthlyBudgetUsd }));
+      setServer(await api.saveSettings({ provider: server.provider, monthlyBudgetUsd: server.monthlyBudgetUsd }));
       notifyUsage();
       setStatus("✓ Saved");
     } catch (e) {
@@ -61,11 +61,34 @@ export default function SettingsPage() {
       </Section>
 
       {!server ? <p className="text-muted">{status || "Loading…"}</p> : (
-        <Section title="Claude" hint={`Model: ${server.claudeModel}. Needs ANTHROPIC_API_KEY in backend/.env.`}>
-          <Row label="Monthly Claude budget ($)">
-            <input type="number" min={0} max={1000} step={1} value={server.monthlyBudgetUsd}
-                   onChange={(e) => setServer({ ...server, monthlyBudgetUsd: Number(e.target.value) })} className={`${input} w-28`} />
-          </Row>
+        <Section title="AI model" hint="Applies to everything. Already-generated explanations stay cached.">
+          <div className="space-y-2">
+            <label className="flex gap-2 rounded-lg border border-border p-3">
+              <input type="radio" checked={server.provider === "gemini"} onChange={() => setServer({ ...server, provider: "gemini" })} />
+              <span>
+                <b>Gemini (free)</b> <span className="text-muted">({server.geminiModel})</span><br />
+                <span className="text-muted">
+                  No card needed. Get a key at <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" className="text-pdf underline">aistudio.google.com/apikey</a> and
+                  put <code>GEMINI_API_KEY=...</code> in <code>backend/.env</code>. Free-tier limits are per minute and per day, so turning
+                  Auto-explain off saves requests. Google may use free-tier content to improve its products.
+                </span>
+              </span>
+            </label>
+            <label className="flex gap-2 rounded-lg border border-border p-3">
+              <input type="radio" checked={server.provider === "claude"} onChange={() => setServer({ ...server, provider: "claude" })} />
+              <span>
+                <b>Claude (paid)</b> <span className="text-muted">({server.claudeModel})</span><br />
+                <span className="text-muted">About $1 per 1,000 pages. Needs <code>ANTHROPIC_API_KEY=...</code> in <code>backend/.env</code>.</span>
+              </span>
+            </label>
+          </div>
+
+          {server.provider === "claude" && (
+            <Row label="Monthly Claude budget ($)">
+              <input type="number" min={0} max={1000} step={1} value={server.monthlyBudgetUsd}
+                     onChange={(e) => setServer({ ...server, monthlyBudgetUsd: Number(e.target.value) })} className={`${input} w-28`} />
+            </Row>
+          )}
 
           <div className="mt-3 flex items-center gap-3">
             <button onClick={save} className="rounded-lg bg-pdf px-4 py-1.5 text-white">Save</button>

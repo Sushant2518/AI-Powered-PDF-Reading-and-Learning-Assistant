@@ -1,6 +1,5 @@
 package dev.sushant.samajh.concepts;
 
-import com.anthropic.models.messages.OutputConfig;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import dev.sushant.samajh.ai.AiService;
 import dev.sushant.samajh.ai.Prompts;
@@ -106,7 +105,7 @@ class ConceptController {
             }
             String user = Prompts.render("deepen", Map.of(
                     "title", doc.getTitle(), "page", String.valueOf(page), "text", p.getText(), "name", (String) concept.get("name")));
-            AiService.Result result = ai.stream("deepen", Prompts.SYSTEM, user, OutputConfig.Effort.MEDIUM, send);
+            AiService.Result result = ai.stream("deepen", Prompts.SYSTEM, user, AiService.Effort.MEDIUM, send);
             if ("end_turn".equals(result.stopReason())) {
                 jdbc.sql("UPDATE concepts SET deepen = ?, deepen_model = ? WHERE id = ?").params(result.text(), ai.model(), conceptId).update();
             }

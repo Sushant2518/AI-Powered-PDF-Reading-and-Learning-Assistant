@@ -19,7 +19,7 @@ export function BeyondBlock({ content, sources, hidden, accessedAt }: { content:
           <li key={s.n} className="flex gap-1.5">
             <span className="text-beyond">[{s.n}]</span>
             <a href={s.url} target="_blank" rel="noopener noreferrer" className="hover:underline">
-              {s.title} <span className="text-muted">· {hostname(s.url)}</span>
+              {s.title}{showHost(s) && <span className="text-muted"> · {hostname(s.url)}</span>}
             </a>
           </li>
         ))}
@@ -37,6 +37,8 @@ export function beyondAsNote(title: string, content: string, sources: Source[]) 
   return `### 🌐 ${title}\n\n${content}\n\n${sources.map((s) => `${s.n}. [${s.title}](${s.url})`).join("\n")}`;
 }
 
+// Gemini links go through a Google redirect; its title is already the real site's domain.
+const showHost = (s: Source) => !hostname(s.url).endsWith("vertexaisearch.cloud.google.com") && hostname(s.url) !== s.title;
 const hostname = (url: string) => { try { return new URL(url).hostname.replace(/^www\./, ""); } catch { return url; } };
 
 type Props = {
