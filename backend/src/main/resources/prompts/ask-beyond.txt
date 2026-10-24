@@ -1,0 +1,4 @@
+I am reading "{{title}}" and asked: {{question}}
+The book does not fully answer it. Suggested search: {{query}}
+
+Search the web and answer in 2 to 6 short bullet points. Every bullet must be supported by a search result; leave out anything you cannot source. Prefer official documentation, standards and papers. No introduction or closing remarks.

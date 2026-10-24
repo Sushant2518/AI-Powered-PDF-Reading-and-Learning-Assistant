@@ -1,0 +1,9 @@
+<document title="{{title}}" page="{{page}}">
+{{text}}
+</document>
+
+List the technical concepts this page teaches or depends on. At most 6, most important first.
+- name: the standard industry name (for example "Idempotence", "Two-Phase Commit", "Cross-Site Scripting"), in Title Case.
+- definition: one sentence in simple English, based on the page.
+- domain: the best-fitting domain.
+If the page has no technical content (preface, index, acknowledgements, table of contents), return an empty list.

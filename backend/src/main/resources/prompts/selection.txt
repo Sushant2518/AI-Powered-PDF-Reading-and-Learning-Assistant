@@ -1,0 +1,10 @@
+<document title="{{title}}" page="{{page}}">
+{{text}}
+</document>
+
+<selection>
+{{selection}}
+</selection>
+
+{{task}} Use the page only as context. Style: {{style}}.
+Answer in 2 to 6 sentences of markdown. If the selection is a single term, give its meaning first, then one short example.

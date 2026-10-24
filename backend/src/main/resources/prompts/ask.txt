@@ -1,0 +1,11 @@
+<document title="{{title}}">
+{{pages}}
+</document>
+{{history}}
+I am on page {{page}}.{{quote}}
+My question: {{question}}
+
+Answer using only these pages, in simple English{{native}}. Be concise; use markdown, and code blocks when they help.
+After each statement taken from a page, add its page marker, for example [p.{{page}}].
+If these pages do not fully answer the question, or I ask about current, latest or real-world information, say briefly what the pages don't cover, then add a line <<<BEYOND>>> followed by one short web search query on the next line.
+End with a line <<<FOLLOWUPS>>> followed by 3 short follow-up questions I might ask next, one per line.

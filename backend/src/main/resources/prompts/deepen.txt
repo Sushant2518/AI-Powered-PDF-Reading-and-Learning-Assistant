@@ -1,0 +1,27 @@
+<document title="{{title}}" page="{{page}}">
+{{text}}
+</document>
+
+Concept: {{name}}
+
+Teach me this concept in depth, as it appears on this page. Use exactly these markdown sections:
+
+## What it is
+2 to 4 sentences in simple English. Base this section only on the page.
+
+## Why it matters
+2 to 4 bullets: when and why a software engineer needs this.
+
+## In my stack
+A short, runnable code example showing the concept in practice. Prefer Java 21 + Spring Boot 3; use TypeScript/Next.js for frontend topics and Python for AI/ML. Start the code with a comment naming the language and versions. If code does not make sense for this concept, write "No code needed:" and one sentence explaining why.
+
+## Diagram
+One Mermaid diagram in a ```mermaid code block showing the mechanism (sequenceDiagram, flowchart or stateDiagram). At most 15 lines. Keep labels short and plain: no quotes, parentheses, brackets or semicolons inside labels or messages.
+
+## Trade-offs
+2 to 4 bullets.
+
+## Common mistakes
+2 to 4 bullets.
+
+Sections other than "What it is" may use general, well-established engineering knowledge. Never invent APIs, library versions or facts.

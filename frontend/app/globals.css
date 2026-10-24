@@ -1,0 +1,65 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f7f6f2;
+  --surface: #ffffff;
+  --foreground: #1e1f22;
+  --muted: #6b6f76;
+  --border: #e4e2dc;
+  --pdf: #3b5bdb;
+  --beyond: #0c8a6e;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --background: #16171a;
+    --surface: #1f2125;
+    --foreground: #ececec;
+    --muted: #9a9ea6;
+    --border: #2e3036;
+    --pdf: #7c93f5;
+    --beyond: #3cc9a6;
+  }
+}
+
+:root[data-theme="dark"] {
+  --background: #16171a;
+  --surface: #1f2125;
+  --foreground: #ececec;
+  --muted: #9a9ea6;
+  --border: #2e3036;
+  --pdf: #7c93f5;
+  --beyond: #3cc9a6;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-pdf: var(--pdf);
+  --color-beyond: var(--beyond);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+/* AI markdown output */
+.md { line-height: 1.7; font-size: 15px; }
+.md p, .md ul, .md ol { margin: 0 0 0.75em; }
+.md h2 { font-size: 1.05em; font-weight: 600; margin: 1.25em 0 0.4em; color: var(--pdf); }
+.md h3 { font-size: 1.1em; font-weight: 600; margin: 0 0 0.5em; }
+.md h2:first-child, .md h3:first-child { margin-top: 0; }
+.md ul { list-style: disc; padding-left: 1.25em; }
+.md ol { list-style: decimal; padding-left: 1.25em; }
+.md code { font-family: var(--font-mono); font-size: 0.9em; background: var(--background); padding: 0.1em 0.3em; border-radius: 4px; }
+.md pre { background: var(--background); border: 1px solid var(--border); border-radius: 8px; padding: 0.75em; overflow: auto; margin-bottom: 0.75em; }
+.md pre code { padding: 0; }
+.native { font-family: var(--font-devanagari), var(--font-sans); font-size: 16px; line-height: 1.85; }
+.caret::after { content: "▍"; animation: blink 1s steps(1) infinite; color: var(--pdf); }
+@keyframes blink { 50% { opacity: 0; } }

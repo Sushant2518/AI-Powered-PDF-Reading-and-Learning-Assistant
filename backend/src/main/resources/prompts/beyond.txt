@@ -1,0 +1,21 @@
+I am reading "{{title}}". On page {{page}} it covers {{name}}:
+
+<document title="{{title}}" page="{{page}}">
+{{text}}
+</document>
+
+Search the web and tell me what is beyond this page about {{name}}. Use these markdown sections, with short bullet points:
+
+## What's current
+Newer versions, standards, deprecations or changes since this text was written. If the page looks outdated, say what changed.
+
+## Background
+Where the idea comes from and the key context the page skips.
+
+## In the real world
+How well-known systems or companies use it.
+
+## Alternatives
+Other approaches and when to prefer them.
+
+Rules: every bullet must be supported by a search result; leave out anything you cannot source. Prefer official documentation, standards (RFC, W3C, NIST, OWASP) and papers. Skip a section entirely if you find nothing trustworthy. No introduction or closing remarks.

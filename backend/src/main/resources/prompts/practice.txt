@@ -1,0 +1,14 @@
+<document title="{{title}}" page="{{page}}">
+{{text}}
+</document>
+{{deepen}}
+Concept: {{name}}
+
+Write practice questions that test real understanding of {{name}} as taught on this page:
+- 3 multiple-choice questions (type MCQ): exactly 4 options, exactly one correct (answerIndex 0 to 3), distractors based on common misconceptions. Vary the position of the correct option.
+- 1 explain-it-back question (type EXPLAIN): ask me to explain the concept in my own words and when it matters.
+- 1 interview question (type INTERVIEW): a practical scenario a senior engineer would ask about applying it.
+
+For every question give modelAnswer (what a strong answer contains, 2 to 4 sentences) and explanation (why it is right, referring to the page).
+For EXPLAIN and INTERVIEW use options [] and answerIndex -1.
+MCQ and EXPLAIN must be answerable from the page; the interview question may apply it to a realistic system.

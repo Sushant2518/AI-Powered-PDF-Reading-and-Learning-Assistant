@@ -1,0 +1,549 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SamajhPDF Mockup</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono&family=Noto+Sans+Devanagari:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F7F6F2;--surface:#fff;--text:#1E1F22;--muted:#6B6F76;--border:#E4E2DC;
+  --pdf:#3B5BDB;--pdf-soft:#EEF2FF;--beyond:#0C8A6E;--beyond-soft:#E6F5F1;--code:#F1F3F5;
+  --page:#fff;--shadow:0 8px 24px rgba(0,0,0,.12);
+  --red:#E03131;--amber:#F08C00;--green:#2F9E44;
+  --hl-yellow:#FFE58A;--hl-green:#B7EB8F;--hl-blue:#A5D8FF;--hl-pink:#FFC9DE;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#16171A;--surface:#1F2125;--text:#ECECEC;--muted:#9A9EA6;--border:#2E3036;
+  --pdf:#7C93F5;--pdf-soft:#262C45;--beyond:#3CC9A6;--beyond-soft:#17322B;--code:#111214;--page:#24262B;--shadow:0 8px 24px rgba(0,0,0,.5);
+}}
+:root[data-theme="dark"]{
+  --bg:#16171A;--surface:#1F2125;--text:#ECECEC;--muted:#9A9EA6;--border:#2E3036;
+  --pdf:#7C93F5;--pdf-soft:#262C45;--beyond:#3CC9A6;--beyond-soft:#17322B;--code:#111214;--page:#24262B;--shadow:0 8px 24px rgba(0,0,0,.5);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 Inter,system-ui,sans-serif}
+.native{font-family:"Noto Sans Devanagari",Inter,sans-serif;font-size:16px;line-height:1.8}
+pre,code{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:12.5px}
+pre{background:var(--code);border:1px solid var(--border);border-radius:8px;padding:10px 12px;overflow:auto;margin:6px 0}
+button{font:inherit;color:inherit;cursor:pointer}
+a{color:var(--pdf)}
+.btn{border:1px solid var(--border);background:var(--surface);border-radius:8px;padding:6px 12px}
+.btn.primary{background:var(--pdf);border-color:var(--pdf);color:#fff}
+.btn.beyond{background:var(--beyond);border-color:var(--beyond);color:#fff}
+.chip{display:inline-block;border:1px solid var(--border);border-radius:999px;padding:3px 10px;margin:3px 4px 3px 0;background:var(--surface);font-size:13px}
+.chip:hover,.btn:hover{border-color:var(--pdf)}
+.pg{display:inline-block;font-size:11px;padding:0 6px;border-radius:999px;background:var(--pdf-soft);color:var(--pdf);cursor:pointer;vertical-align:1px}
+.src{display:inline-block;font-size:11px;padding:0 5px;border-radius:4px;background:var(--beyond-soft);color:var(--beyond);vertical-align:1px}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px}
+.muted{color:var(--muted)}
+.hidden{display:none!important}
+.spacer{flex:1}
+
+header{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--border);flex-wrap:wrap}
+.logo{font-weight:600;font-size:16px}
+nav a{color:var(--muted);text-decoration:none;margin-right:14px}
+nav a.active{color:var(--text);font-weight:600}
+select{font:inherit;color:inherit;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:5px 8px}
+.budget{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.meter{width:70px;height:6px;background:var(--border);border-radius:9px;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--pdf)}
+
+.wrap{max-width:1050px;margin:0 auto;padding:24px 16px}
+.resume{display:flex;align-items:center;gap:16px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin:12px 0 18px;flex-wrap:wrap}
+.bar{height:8px;background:var(--border);border-radius:9px;flex:1;min-width:80px;overflow:hidden}
+.bar i{display:block;height:100%}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;cursor:pointer}
+.card:hover{border-color:var(--pdf)}
+.thumb{height:110px;background:repeating-linear-gradient(var(--page) 0 10px,var(--border) 10px 11px);border-bottom:1px solid var(--border)}
+.card .meta{padding:10px 12px}
+.tag{font-size:11px;padding:1px 7px;border-radius:999px;background:var(--pdf-soft);color:var(--pdf);margin-right:4px}
+.drop{border:2px dashed var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;text-align:center;min-height:200px;color:var(--muted)}
+
+.reader{display:grid;grid-template-columns:58fr 42fr;height:calc(100vh - 53px)}
+.pdfpane{overflow:auto;padding:24px;border-right:1px solid var(--border)}
+.page{background:var(--page);max-width:620px;margin:0 auto;padding:48px 52px;box-shadow:0 1px 4px rgba(0,0,0,.08);border-radius:4px;font-family:Georgia,serif;font-size:16px;line-height:1.75}
+.page h2{font-family:Inter,sans-serif;font-size:20px;margin-top:0}
+.page mark{border-radius:2px;color:inherit}
+.panel{display:flex;flex-direction:column;background:var(--surface);min-height:0}
+.ptabs{display:flex;border-bottom:1px solid var(--border);overflow-x:auto}
+.ptabs button{flex:1;border:0;background:none;padding:12px 8px;border-bottom:2px solid transparent;color:var(--muted);white-space:nowrap}
+.ptabs button.on{color:var(--text);border-color:var(--pdf);font-weight:600}
+.ptabs button[data-ptab="beyond"].on{border-color:var(--beyond)}
+.pbody{flex:1;overflow:auto;padding:16px}
+.zone{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px}
+.zone.pdfz{color:var(--pdf)} .zone.bz{color:var(--beyond)}
+.ltabs{display:inline-flex;background:var(--bg);border-radius:8px;padding:3px;margin-bottom:10px}
+.ltabs button{border:0;background:none;padding:5px 12px;border-radius:6px;color:var(--muted)}
+.ltabs button.on{background:var(--surface);color:var(--text);box-shadow:0 1px 2px rgba(0,0,0,.1)}
+.label{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:14px 0 4px}
+.selcard{border:1px solid var(--border);border-left:3px solid var(--pdf);border-radius:8px;padding:12px;margin-bottom:16px;background:var(--bg)}
+.selcard.b{border-left-color:var(--beyond)}
+.selcard blockquote{margin:0 0 8px;font-style:italic;color:var(--muted)}
+.bblock{border-left:3px solid var(--beyond);background:var(--beyond-soft);padding:10px 12px;border-radius:6px;margin-top:8px}
+.nblock{border-left:3px solid var(--pdf);background:var(--pdf-soft);padding:8px 12px;border-radius:6px;margin-top:8px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.warn{background:rgba(240,140,0,.12);border:1px solid rgba(240,140,0,.4);border-radius:8px;padding:8px 10px;margin:8px 0}
+.sources li{margin:4px 0;font-size:13px}
+
+#selmenu{position:fixed;z-index:10;display:flex;align-items:center;gap:1px;background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow);border-radius:10px;padding:4px;flex-wrap:wrap;max-width:calc(100vw - 16px)}
+#selmenu button{border:0;background:none;padding:6px 8px;border-radius:6px;white-space:nowrap}
+#selmenu button:hover{background:var(--pdf-soft)}
+.hl{width:16px;height:16px;border-radius:50%;padding:0!important;margin:0 3px;border:1px solid rgba(0,0,0,.1)!important}
+
+.msg{margin:10px 0;padding:10px 12px;border-radius:10px;max-width:94%}
+.msg.user{margin-left:auto;background:var(--pdf-soft)}
+.msg.ai{background:var(--bg);border:1px solid var(--border)}
+.quote{font-size:12px;color:var(--muted);border-left:2px solid var(--muted);padding-left:6px;margin-bottom:4px}
+.composer{border-top:1px solid var(--border);padding:10px 12px}
+.composer form{display:flex;gap:8px;margin-top:8px}
+.composer input[type=text]{flex:1;border:1px solid var(--border);border-radius:8px;padding:8px;background:var(--bg);color:var(--text);font:inherit}
+.seg{display:inline-flex;gap:4px}
+.seg button{border:1px solid var(--border);background:none;border-radius:999px;padding:2px 10px;font-size:12px}
+.seg button.on{background:var(--pdf);color:#fff;border-color:var(--pdf)}
+.note{border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:10px;background:var(--bg)}
+.note .q{border-left:3px solid var(--hl-yellow);padding-left:8px;font-style:italic}
+
+.box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px}
+.opt{display:block;width:100%;text-align:left;margin:8px 0;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface)}
+.opt.right{border-color:var(--green);background:rgba(47,158,68,.12)}
+.opt.wrong{border-color:var(--red);background:rgba(224,49,49,.1)}
+textarea{width:100%;min-height:110px;border:1px solid var(--border);border-radius:8px;padding:10px;background:var(--bg);color:var(--text);font:inherit}
+.twocol{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.row{display:flex;align-items:center;gap:10px;margin:8px 0}
+.row .name{width:110px}
+.weak{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)}
+
+@media (max-width:767px){
+  .reader{grid-template-columns:1fr;grid-template-rows:1fr 48vh}
+  .pdfpane{border-right:0;padding:12px}
+  .page{padding:24px 20px}
+  .panel{border-top:1px solid var(--border);border-radius:14px 14px 0 0;box-shadow:var(--shadow)}
+  .twocol{grid-template-columns:1fr}
+  nav{order:3;width:100%}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <span class="logo">📖 SamajhPDF</span>
+  <nav>
+    <a href="#library" data-nav="library">Library</a>
+    <a href="#reader" data-nav="reader">Reader</a>
+    <a href="#practice" data-nav="practice">Practice</a>
+    <a href="#mastery" data-nav="mastery">Mastery</a>
+  </nav>
+  <span class="spacer"></span>
+  <span id="pagenav" class="muted hidden">DDIA · ◀ 472 / 562 ▶</span>
+  <span class="budget" title="Claude API spend this month">$7.40 / $20 <span class="meter"><i style="width:37%"></i></span></span>
+  <label class="muted">🌐 <select id="lang"><option value="mr">मराठी</option><option value="hi">हिन्दी</option><option value="none">English only</option></select></label>
+  <button class="btn" id="theme" title="Toggle theme">☾</button>
+</header>
+
+<!-- LIBRARY -->
+<section id="library" class="screen">
+  <div class="wrap">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <h1 style="margin:0;font-size:24px">My PDFs</h1><span class="spacer"></span>
+      <button class="btn primary">+ Upload PDF</button>
+    </div>
+    <div class="resume">
+      <div><b>📄 DDIA · Ch.11 Stream Processing</b><div class="muted">Page 472 of 562 · 18 notes</div></div>
+      <span class="muted">mastery</span><div class="bar"><i style="width:41%;background:var(--amber)"></i></div><span>41%</span>
+      <a class="btn primary" href="#reader" style="text-decoration:none">Resume →</a>
+    </div>
+    <div style="margin-bottom:16px">
+      <span class="chip" style="border-color:var(--pdf)">All</span><span class="chip">Backend</span><span class="chip">Distributed</span><span class="chip">Security</span><span class="chip">AI / LLMs</span><span class="chip">Frontend</span><span class="chip">DevOps</span><span class="chip">CS Fundamentals</span>
+    </div>
+    <div class="grid">
+      <div class="card" onclick="location.hash='reader'"><div class="thumb"></div><div class="meta"><b>Designing Data-Intensive Apps</b><div><span class="tag">Distributed</span><span class="tag">Data</span></div><div class="muted">562 pg · read 34%</div><div><span class="dot" style="background:var(--amber)"></span>41% mastered</div></div></div>
+      <div class="card"><div class="thumb"></div><div class="meta"><b>OWASP Top 10</b><div><span class="tag">Security</span></div><div class="muted">38 pg · read 100%</div><div><span class="dot" style="background:var(--green)"></span>82% mastered</div></div></div>
+      <div class="card"><div class="thumb"></div><div class="meta"><b>Attention Is All You Need</b><div><span class="tag">AI / LLMs</span></div><div class="muted">15 pg · read 40%</div><div><span class="dot" style="background:var(--red)"></span>18% mastered</div></div></div>
+      <div class="card"><div class="thumb" style="opacity:.4"></div><div class="meta"><b>OSTEP</b><div><span class="tag">CS Fundamentals</span></div><div class="muted">◌ Processing… 60%</div></div></div>
+      <div class="drop">⬆<br>Drop a PDF here<br>or click to upload</div>
+    </div>
+  </div>
+</section>
+
+<!-- READER -->
+<section id="reader" class="screen hidden">
+  <div class="reader">
+    <div class="pdfpane">
+      <p class="muted" style="text-align:center;margin-top:0">💡 Select any text on the page to open the selection menu</p>
+      <div class="page" id="page">
+        <h2>Idempotence</h2>
+        <p>An operation is idempotent if performing it several times has the same effect as performing it once. Setting a key to a fixed value is idempotent; incrementing a counter is not.</p>
+        <p>Idempotence matters because networks are unreliable. When a client sends a request and the response times out, the client cannot know whether the server processed it. Retrying is only safe if the operation is idempotent — otherwise a payment might be charged twice.</p>
+        <p>A common technique is to attach a unique request ID to every operation. The server records the IDs it has already processed and ignores duplicates. Combined with retries, this gives effectively-once processing, even though messages may be delivered more than once.</p>
+        <p class="muted" style="text-align:center;font-size:12px">— 472 —<br>(sample page written for this mockup)</p>
+      </div>
+    </div>
+
+    <aside class="panel">
+      <div class="ptabs">
+        <button data-ptab="understand" class="on">Understand</button>
+        <button data-ptab="deepen">Deepen</button>
+        <button data-ptab="beyond">🌐 Beyond</button>
+        <button data-ptab="ask">Ask</button>
+        <button data-ptab="notes">Notes <span id="notecount"></span></button>
+      </div>
+
+      <!-- Understand -->
+      <div class="pbody" id="tab-understand">
+        <div id="selresult"></div>
+        <div class="zone pdfz">📄 From your PDF · <span class="pg">p.472</span></div>
+        <div class="ltabs">
+          <button data-ltab="simple" class="on">Simple English</button>
+          <button data-ltab="native" class="langname">मराठी</button>
+          <button data-ltab="original">Original</button>
+        </div>
+        <div id="lt-simple">
+          <p>If you do the same thing twice and the result is the same as doing it once, the action is <b>idempotent</b>. Setting <code>x = 5</code> is idempotent. Doing <code>x = x + 1</code> is not.</p>
+          <p>Why care? Networks fail. If your request times out, you don't know whether the server did the work. Sending it again (a <b>retry</b>) is only safe for idempotent actions. Otherwise a customer could be charged twice.</p>
+          <p>The usual fix: give every request a <b>unique ID</b>. The server remembers which IDs it already handled and skips repeats. So even if a message arrives twice, it is processed only once ("effectively-once").</p>
+        </div>
+        <div id="lt-native" class="hidden native"></div>
+        <div id="lt-original" class="hidden muted" style="font-family:Georgia,serif">An operation is idempotent if performing it several times has the same effect as performing it once…</div>
+        <div class="label">Key terms</div>
+        <div id="terms"></div>
+        <div id="termcard"></div>
+        <div class="actions">
+          <button class="btn primary" onclick="showTab('deepen')">🔬 Deepen this page →</button>
+          <button class="btn beyond" onclick="showTab('beyond')">🧭 Go beyond</button>
+        </div>
+        <div class="actions">
+          <button class="btn">👍</button><button class="btn">👎</button><button class="btn">↻</button>
+          <button class="btn" onclick="addNote('Page 472 — simple explanation','Idempotent = same result if repeated. Needed for safe retries.','📄 p.472')">+ Note</button>
+        </div>
+      </div>
+
+      <!-- Deepen -->
+      <div class="pbody hidden" id="tab-deepen">
+        <div class="zone pdfz">📄 Concepts on <span class="pg">p.472</span></div>
+        <div>
+          <span class="chip" style="border-color:var(--pdf)"><span class="dot" style="background:var(--amber)"></span>Idempotence 62</span>
+          <span class="chip"><span class="dot" style="background:var(--amber)"></span>Retry 55</span>
+          <span class="chip"><span class="dot" style="background:var(--red)"></span>Exactly-once 20</span>
+        </div>
+        <h3 style="margin:14px 0 4px">Idempotence <span class="tag">Distributed</span></h3>
+        <div class="label">Definition</div><div>Doing the same request twice has the same effect as doing it once.</div>
+        <div class="label">Why it matters</div><div>Clients must retry after timeouts. Without idempotence, retries create duplicates (double payments, double emails).</div>
+        <div class="label">In your stack <span class="seg" id="codelang" style="margin-left:6px"><button class="on" data-l="java">Java / Spring</button><button data-l="ts">TypeScript</button></span></div>
+        <pre id="code"></pre>
+        <div class="label">Diagram</div>
+<pre>Client              Server               DB
+  │ POST key=K1        │                   │
+  │───────────────────►│ insert K1, charge │
+  │      ✗ timeout     │──────────────────►│
+  │ POST key=K1 (retry)│                   │
+  │───────────────────►│ K1 exists?  yes   │
+  │◄───────────────────│ return saved result
+</pre>
+        <div class="muted" style="font-size:12px">(real app renders this as a Mermaid sequence diagram)</div>
+        <div class="label">Trade-offs</div><div>• Storing keys costs space → expire them (e.g., 24 h)<br>• Must store the response, not just the key</div>
+        <div class="label">Common mistakes</div><div>• Assuming POST is idempotent<br>• Checking the key without a UNIQUE constraint (race condition)</div>
+        <div class="label">Also in your PDFs</div><div>RFC 9110 <span class="pg">§9.2.2</span> · DDIA <span class="pg">p.360</span></div>
+        <div class="actions"><button class="btn" onclick="addNote('Idempotence','Idempotency-Key header + UNIQUE constraint. Store the response.','📄 p.472')">📝 Save to notes</button><button class="btn">🃏 Make flashcards</button><a class="btn primary" href="#practice" style="text-decoration:none">🎯 Practise</a></div>
+      </div>
+
+      <!-- Beyond -->
+      <div class="pbody hidden" id="tab-beyond">
+        <div class="zone bz">🌐 Beyond the PDF · Idempotence</div>
+        <div class="muted" style="font-size:13px">Not from your book. Every point has a source. <a href="#" onclick="return false">↻ Refresh</a></div>
+        <div class="warn">⚠ Your PDF was published in <b>2017</b>. Newer material exists, see “What's current”.</div>
+        <div class="label">What's current</div>
+        <div>• The IETF HTTP APIs working group has a draft that standardises an <code>Idempotency-Key</code> request header for non-idempotent methods like POST. <span class="src">[1]</span></div>
+        <div class="label">Background</div>
+        <div>• HTTP defines PUT, DELETE and the safe methods (GET, HEAD, OPTIONS, TRACE) as idempotent. <span class="src">[2]</span></div>
+        <div class="label">In the real world</div>
+        <div>• Stripe's API accepts an idempotency key on POST requests so clients can retry safely. <span class="src">[3]</span></div>
+        <div class="label">Sources</div>
+        <ol class="sources">
+          <li><a href="https://datatracker.ietf.org/doc/draft-ietf-httpapi-idempotency-key-header/" target="_blank" rel="noopener">The Idempotency-Key HTTP Header Field (Internet-Draft)</a> · datatracker.ietf.org</li>
+          <li><a href="https://www.rfc-editor.org/rfc/rfc9110#section-9.2.2" target="_blank" rel="noopener">RFC 9110 HTTP Semantics, §9.2.2 Idempotent Methods</a> · rfc-editor.org</li>
+          <li><a href="https://docs.stripe.com/api/idempotent_requests" target="_blank" rel="noopener">Idempotent requests, Stripe API reference</a> · docs.stripe.com</li>
+        </ol>
+        <div class="muted" style="font-size:12px">Accessed dates shown in the real app. Sample content for the mockup.</div>
+        <div class="actions"><button class="btn beyond" onclick="addNote('Idempotency-Key header (beyond the PDF)','IETF draft standardises the header; Stripe uses it on POST.','🌐 3 sources')">+ Save to notes with sources</button></div>
+      </div>
+
+      <!-- Ask -->
+      <div class="hidden" id="tab-ask" style="display:flex;flex-direction:column;flex:1;min-height:0">
+        <div class="pbody" id="chatlog"><p class="muted">Ask anything about this page. The PDF answers first; Beyond adds sourced extras.</p></div>
+        <div class="composer">
+          <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+            <label style="font-size:12px"><input type="checkbox" id="allowBeyond" checked> Allow 🌐 Beyond</label>
+            <span class="muted" style="font-size:12px">Answer in:</span>
+            <span class="seg" id="answermode"><button class="on">EN</button><button class="langname">मराठी</button><button>Both</button></span>
+          </div>
+          <div id="quotechip"></div>
+          <form id="chatform"><input type="text" id="chatinput" placeholder="Ask about p.472…" autocomplete="off"><button class="btn primary">➤</button></form>
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div class="pbody hidden" id="tab-notes"><div id="notelist"></div></div>
+    </aside>
+  </div>
+</section>
+
+<!-- PRACTICE -->
+<section id="practice" class="screen hidden">
+  <div class="wrap">
+    <h1 style="font-size:24px;margin-top:0">Practice · DDIA Ch.11 <span class="muted" style="font-size:14px">mode: weak concepts</span></h1>
+    <div class="twocol">
+      <div class="box">
+        <div class="muted" style="font-size:12px">3 / 10 · MCQ · concept: Idempotence</div>
+        <p><b>Which approach makes a payment API safe for clients to retry?</b></p>
+        <div id="quiz"></div>
+        <div id="quizfb"></div>
+      </div>
+      <div class="box">
+        <div class="muted" style="font-size:12px">4 / 10 · Explain it back · concept: Idempotence</div>
+        <p><b>Explain idempotence in your own words, and say when it matters.</b></p>
+        <textarea id="explain" placeholder="Type your answer…"></textarea>
+        <div class="actions"><button class="btn primary" id="grade">Submit for grading</button></div>
+        <div id="gradefb"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MASTERY -->
+<section id="mastery" class="screen hidden">
+  <div class="wrap">
+    <div style="display:flex;align-items:center;flex-wrap:wrap;gap:12px">
+      <h1 style="font-size:24px;margin:0">Mastery</h1><span class="spacer"></span>
+      <span>This week: <b>+23</b> concepts mastered · 🔥 5-day streak</span>
+    </div>
+    <div class="twocol" style="margin-top:18px">
+      <div class="box"><h3 style="margin-top:0">By domain</h3><div id="domains"></div></div>
+      <div class="box"><h3 style="margin-top:0">Weakest concepts</h3><div id="weak"></div></div>
+    </div>
+    <div class="box" style="margin-top:20px">
+      <b>By PDF:</b> DDIA <span class="dot" style="background:var(--amber)"></span>41% · OWASP Top 10 <span class="dot" style="background:var(--green)"></span>82% · Attention <span class="dot" style="background:var(--red)"></span>18%
+      <div class="muted" style="margin-top:6px">Release 2: knowledge map across all domains →</div>
+    </div>
+  </div>
+</section>
+
+<div id="selmenu" class="hidden">
+  <button data-act="explain">💬 Explain</button>
+  <button data-act="translate">🌐 Translate</button>
+  <button data-act="deepen">🔬 Deepen</button>
+  <button data-act="beyond">🧭 Beyond</button>
+  <button data-act="ask">❓ Ask</button>
+  <button data-act="note">📝 Note</button>
+  <button data-act="card">🃏 Card</button>
+  <button class="hl" data-hl="var(--hl-yellow)" style="background:var(--hl-yellow)" title="Highlight"></button>
+  <button class="hl" data-hl="var(--hl-green)" style="background:var(--hl-green)"></button>
+  <button class="hl" data-hl="var(--hl-blue)" style="background:var(--hl-blue)"></button>
+  <button class="hl" data-hl="var(--hl-pink)" style="background:var(--hl-pink)"></button>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+const esc = s => { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; };
+
+// ---- sample content ----
+const L = {
+  mr: { name: 'मराठी',
+    page: `<p>एखादी क्रिया एकदा केली काय किंवा अनेकदा केली काय, परिणाम सारखाच राहत असेल तर ती <b>idempotent</b> असते. उदा. <code>x = 5</code> करणे idempotent आहे, पण <code>x = x + 1</code> नाही.</p><p>हे का महत्त्वाचे? नेटवर्क कधीही बिघडू शकते. Request चे उत्तर (response) आले नाही, तर server ने काम केले की नाही हे client ला कळत नाही. अशा वेळी पुन्हा पाठवणे (<b>retry</b>) फक्त idempotent क्रियेसाठीच सुरक्षित असते — नाहीतर ग्राहकाचे पैसे दोनदा कापले जाऊ शकतात.</p><p>उपाय: प्रत्येक request ला एक <b>unique ID</b> द्यायचा. Server आधी हाताळलेले ID लक्षात ठेवतो आणि पुन्हा आलेली request सोडून देतो. त्यामुळे message दोनदा आला तरी काम एकदाच होते.</p>`,
+    sel: 'अर्थ: retry तेव्हाच सुरक्षित आहे जेव्हा तीच क्रिया पुन्हा केल्याने काही बिघडत नाही.',
+    chat: 'Idempotency key मुळे server ला कळते की ही request आधीच process झाली आहे, म्हणून पैसे दोनदा कापले जात नाहीत.' },
+  hi: { name: 'हिन्दी',
+    page: `<p>अगर कोई काम एक बार करो या कई बार, नतीजा वही रहे, तो वह काम <b>idempotent</b> है। जैसे <code>x = 5</code> करना idempotent है, लेकिन <code>x = x + 1</code> नहीं।</p><p>यह क्यों ज़रूरी है? नेटवर्क कभी भी फेल हो सकता है। अगर request का जवाब (response) नहीं आया, तो client को पता नहीं चलता कि server ने काम किया या नहीं। ऐसे में दोबारा भेजना (<b>retry</b>) सिर्फ़ idempotent काम के लिए सुरक्षित है — वरना ग्राहक से दो बार पैसे कट सकते हैं।</p><p>उपाय: हर request को एक <b>unique ID</b> दो। Server पहले से हैंडल किए गए ID याद रखता है और दोबारा आई request को छोड़ देता है। इससे message दो बार आए तब भी काम एक ही बार होता है।</p>`,
+    sel: 'मतलब: retry तभी सुरक्षित है जब वही काम दोबारा करने से कुछ न बिगड़े।',
+    chat: 'Idempotency key से server को पता चलता है कि यह request पहले ही process हो चुकी है, इसलिए पैसे दो बार नहीं कटते।' },
+};
+const TERMS = {
+  idempotent: 'Repeating it gives the same result as doing it once.',
+  retry: 'Sending the same request again after a failure or timeout.',
+  'unique request ID': 'An ID the client creates once per operation and reuses on every retry.',
+  'effectively-once': 'Messages may arrive more than once, but their effect happens only once.',
+};
+const CODE = {
+  java: `@PostMapping("/payments")
+ResponseEntity&lt;Payment&gt; pay(@RequestHeader("Idempotency-Key") String key,
+                            @RequestBody PaymentRequest req) {
+    return paymentRepo.findByIdempotencyKey(key)   // already processed?
+        .map(ResponseEntity::ok)                    // return the saved result
+        .orElseGet(() -&gt; ResponseEntity.ok(service.charge(key, req)));
+}
+// Flyway: ALTER TABLE payments ADD CONSTRAINT uq_key UNIQUE (idempotency_key);
+// The UNIQUE constraint stops two concurrent duplicates.   (Java 21, Spring Boot 3)`,
+  ts: `const key = crypto.randomUUID();   // create ONCE per payment
+for (let attempt = 1; attempt &lt;= 3; attempt++) {
+  try {
+    return await fetch("/api/payments", {
+      method: "POST",
+      headers: { "Idempotency-Key": key, "Content-Type": "application/json" },
+      body: JSON.stringify(payment),
+    });                                // same key on every retry
+  } catch { await new Promise(r =&gt; setTimeout(r, 2 ** attempt * 100)); }
+}                                      // (TypeScript, browser fetch)`,
+};
+const FOLLOWUPS = ['How long should the server keep idempotency keys?', 'Is PUT always idempotent?', 'Difference between exactly-once and effectively-once?'];
+let lang = 'mr';
+const T = () => L[lang] || L.mr;
+
+// ---- routing ----
+function route(){
+  const id = (location.hash || '#library').slice(1);
+  $$('.screen').forEach(s => s.classList.toggle('hidden', s.id !== id));
+  $$('[data-nav]').forEach(a => a.classList.toggle('active', a.dataset.nav === id));
+  $('#pagenav').classList.toggle('hidden', id !== 'reader');
+  hideMenu();
+}
+addEventListener('hashchange', route);
+
+$('#theme').onclick = () => {
+  const r = document.documentElement;
+  const dark = r.dataset.theme ? r.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+  r.dataset.theme = dark ? 'light' : 'dark';
+};
+
+function renderLang(){
+  const none = lang === 'none';
+  $$('.langname').forEach(b => { b.textContent = T().name; b.classList.toggle('hidden', none); });
+  $('#lt-native').innerHTML = T().page;
+  if (none && !$('#lt-native').classList.contains('hidden')) $('[data-ltab="simple"]').click();
+}
+$('#lang').onchange = e => { lang = e.target.value; renderLang(); };
+
+// ---- tabs ----
+$$('[data-ptab]').forEach(b => b.onclick = () => showTab(b.dataset.ptab));
+function showTab(t){
+  $$('[data-ptab]').forEach(b => b.classList.toggle('on', b.dataset.ptab === t));
+  ['understand','deepen','beyond','ask','notes'].forEach(x => $('#tab-'+x).classList.toggle('hidden', x !== t));
+}
+$$('[data-ltab]').forEach(b => b.onclick = () => {
+  $$('[data-ltab]').forEach(x => x.classList.toggle('on', x === b));
+  ['simple','native','original'].forEach(x => $('#lt-'+x).classList.toggle('hidden', x !== b.dataset.ltab));
+});
+$('#answermode').onclick = e => { if (e.target.tagName === 'BUTTON') $$('#answermode button').forEach(b => b.classList.toggle('on', b === e.target)); };
+$('#codelang').onclick = e => { const l = e.target.dataset.l; if (!l) return; $$('#codelang button').forEach(b => b.classList.toggle('on', b === e.target)); $('#code').innerHTML = CODE[l]; };
+$('#code').innerHTML = CODE.java;
+
+// ---- key terms ----
+$('#terms').innerHTML = Object.keys(TERMS).map(w => `<button class="chip" data-term="${w}">${w}</button>`).join('');
+document.addEventListener('click', e => {
+  const w = e.target.dataset && e.target.dataset.term;
+  if (w) $('#termcard').innerHTML = `<div class="selcard"><b>${w}</b> <span class="pg">p.472</span><div>${TERMS[w]}</div><div class="actions"><button class="btn" onclick="showTab('deepen')">🔬 Deepen</button><button class="btn">🃏 Card</button></div></div>`;
+  const q = e.target.dataset && e.target.dataset.q;
+  if (q) { showTab('ask'); ask(q); }
+});
+
+// ---- selection menu ----
+let selRange = null, selText = '', lastSel = '';
+const menu = $('#selmenu');
+$('#page').addEventListener('mouseup', () => setTimeout(() => {
+  const s = getSelection();
+  selText = s.toString().trim();
+  if (!selText) return hideMenu();
+  selRange = s.getRangeAt(0);
+  const r = selRange.getBoundingClientRect();
+  menu.classList.remove('hidden');
+  const left = Math.max(8, Math.min(r.left + r.width/2 - menu.offsetWidth/2, innerWidth - menu.offsetWidth - 8));
+  const top = r.top - menu.offsetHeight - 8 < 8 ? r.bottom + 8 : r.top - menu.offsetHeight - 8;
+  menu.style.left = left + 'px'; menu.style.top = top + 'px';
+}, 0));
+function hideMenu(){ menu.classList.add('hidden'); }
+document.addEventListener('mousedown', e => { if (!menu.contains(e.target)) hideMenu(); });
+$('.pdfpane').addEventListener('scroll', hideMenu);
+
+menu.onclick = e => {
+  const b = e.target.closest('button'); if (!b) return;
+  lastSel = selText;
+  const q = esc(selText.length > 160 ? selText.slice(0,160) + '…' : selText);
+  const act = b.dataset.act;
+  if (b.dataset.hl) highlight(b.dataset.hl);
+  else if (act === 'note') addNote(selText, '', '📄 p.472');
+  else if (act === 'card') addNote(selText, '🃏 Flashcard created: front = this text, back = simple explanation', '📄 p.472');
+  else if (act === 'deepen') showTab('deepen');
+  else if (act === 'beyond') showTab('beyond');
+  else if (act === 'ask') { showTab('ask'); $('#quotechip').innerHTML = `<div class="quote" style="margin-top:8px">❝${q}❞ <button class="btn" style="padding:0 6px" onclick="this.parentNode.remove()">×</button></div>`; $('#chatinput').focus(); }
+  else {
+    showTab('understand');
+    const body = act === 'explain'
+      ? `<div>In simple words: you can only safely send a request again if repeating it can't cause harm, like charging twice. <span class="pg">p.472</span></div>`
+      : `<div class="native nblock">${T().sel}</div>`;
+    $('#selresult').innerHTML = `<div class="selcard"><div class="zone pdfz">📄 Selection · ${b.textContent.trim()}</div><blockquote>❝${q}❞</blockquote>${body}<div class="actions"><button class="btn" onclick="addNote(lastSel, '', '📄 p.472')">+ Note</button><button class="btn" onclick="showTab('ask');ask('Can you explain this with an example?')">Ask follow-up</button><button class="btn" onclick="this.closest('.selcard').remove()">Close</button></div></div>`;
+    $('#tab-understand').scrollTop = 0;
+  }
+  getSelection().removeAllRanges(); hideMenu();
+};
+function highlight(color){
+  try { const m = document.createElement('mark'); m.style.background = color; selRange.surroundContents(m); }
+  catch { /* spans several elements: the real app draws highlights from anchor rects */ }
+}
+
+// ---- ask ----
+$('#chatform').onsubmit = e => { e.preventDefault(); const v = $('#chatinput').value.trim(); if (v) { ask(v); $('#chatinput').value = ''; } };
+function ask(q){
+  const quote = $('#quotechip .quote');
+  const qhtml = quote ? `<div class="quote">${esc(quote.firstChild.textContent)}</div>` : '';
+  $('#quotechip').innerHTML = '';
+  const log = $('#chatlog');
+  log.insertAdjacentHTML('beforeend', `<div class="msg user">${qhtml}${esc(q)}</div>`);
+  const mode = $('#answermode .on').textContent;
+  const en = `The server stores each request's unique ID. If the same ID arrives again (a retry), it returns the saved result instead of doing the work again. <span class="pg">p.472</span>`;
+  const nat = lang === 'none' ? '' : `<div class="native nblock">${T().chat}</div>`;
+  const pdf = mode === 'EN' ? en : mode === 'Both' ? en + nat : (nat || en);
+  const beyond = $('#allowBeyond').checked
+    ? `<div class="bblock"><div class="zone bz">🌐 Beyond the PDF</div>Payment APIs such as Stripe's accept an idempotency key on POST requests. <span class="src">[3]</span><div class="muted" style="font-size:12px;margin-top:4px">[3] docs.stripe.com, Idempotent requests</div></div>` : '';
+  const id = 'm' + Date.now();
+  log.insertAdjacentHTML('beforeend', `<div class="msg ai" id="${id}"><span class="muted">Thinking…</span></div>`);
+  log.scrollTop = log.scrollHeight;
+  setTimeout(() => {
+    $('#'+id).innerHTML = `<div class="zone pdfz">📄 From your PDF</div>${pdf}${beyond}`;
+    log.insertAdjacentHTML('beforeend', `<div>${FOLLOWUPS.map(f => `<button class="chip" data-q="${f}">› ${f}</button>`).join('')}</div>`);
+    log.scrollTop = log.scrollHeight;
+  }, 700);
+}
+
+// ---- notes ----
+const notes = [{q:'Retrying is only safe if the operation is idempotent', c:'Always send an Idempotency-Key on payment POSTs.', s:'📄 p.472'}];
+function addNote(q, c, s){ notes.unshift({q, c, s}); renderNotes(); showTab('notes'); }
+function renderNotes(){
+  $('#notecount').textContent = notes.length;
+  $('#notelist').innerHTML = '<div class="label" style="margin-top:0">Ch.11 · Stream Processing</div>' + notes.map((n,i) => `
+    <div class="note"><div class="q">“${esc(n.q.slice(0,200))}”</div>
+    <div contenteditable="true" style="margin-top:6px;outline:none">${esc(n.c) || '<span class="muted">✎ Click to write your note…</span>'}</div>
+    <div class="muted" style="font-size:12px;margin-top:6px;display:flex;gap:10px"><span>${n.s}</span><span class="spacer"></span><a href="#" onclick="jump();return false">↗ Jump</a><a href="#" onclick="notes.splice(${i},1);renderNotes();return false">🗑</a></div></div>`).join('');
+}
+function jump(){ const p = $('#page'); p.scrollIntoView({behavior:'smooth'}); p.animate([{boxShadow:'0 0 0 4px var(--pdf)'},{boxShadow:'0 0 0 0 transparent'}],{duration:1200}); }
+
+// ---- practice ----
+const QUIZ = [['Use POST for every request', 0], ['Send an idempotency key and enforce a UNIQUE constraint on it', 1], ['Increase the client timeout', 0], ['Retry until the server responds', 0]];
+$('#quiz').innerHTML = QUIZ.map(([t, ok]) => `<button class="opt" data-ok="${ok}">${t}</button>`).join('');
+$('#quiz').onclick = e => {
+  const b = e.target.closest('.opt'); if (!b) return;
+  $$('.opt').forEach(o => { o.disabled = true; if (o.dataset.ok === '1') o.classList.add('right'); });
+  const ok = b.dataset.ok === '1';
+  if (!ok) b.classList.add('wrong');
+  $('#quizfb').innerHTML = `<p>${ok ? '✅ Correct!' : '❌ Not quite.'} The key lets the server detect a retry; the UNIQUE constraint stops two concurrent duplicates. <span class="pg">p.472</span></p><div>Idempotence <span class="dot" style="background:var(--amber)"></span>62 → <b>${ok ? 68 : 57}</b></div>`;
+};
+$('#grade').onclick = () => {
+  const a = $('#explain').value.toLowerCase();
+  const checks = [['same result / effect when repeated', /same|once/], ['retries after failures or timeouts', /retr|timeout|fail/], ['risk of duplicate side effects', /duplicate|twice|double/]];
+  const hit = checks.filter(([, re]) => re.test(a));
+  const score = a.trim() ? Math.round(30 + 70 * hit.length / checks.length) : 0;
+  const miss = checks.filter(c => !hit.includes(c)).map(([n]) => n);
+  $('#gradefb').innerHTML = `<p><b>Score: ${score}/100</b> ${score >= 70 ? '✅' : ''}</p>${miss.length ? `<div>Missing: ${miss.join(', ')}</div>` : '<div>Covers all key points. 🎉</div>'}<div class="muted" style="font-size:12px;margin-top:6px">(Mockup checks keywords; the real app has Claude grade your answer against p.472)</div>`;
+};
+
+// ---- mastery ----
+const color = v => v >= 80 ? 'var(--green)' : v >= 40 ? 'var(--amber)' : 'var(--red)';
+$('#domains').innerHTML = [['Distributed',58],['Security',82],['Backend',47],['AI / LLMs',18],['Frontend',0],['DevOps',12],['CS Fundamentals',33]]
+  .map(([n,v]) => `<div class="row"><span class="name">${n}</span><div class="bar"><i style="width:${v}%;background:${color(v)}"></i></div><span style="width:36px;text-align:right">${v}%</span></div>`).join('');
+$('#weak').innerHTML = [['Exactly-once',20],['Linearizability',31],['Two-phase commit',38],['CSRF tokens',44],['Attention heads',45]]
+  .map(([n,v]) => `<div class="weak"><span class="dot" style="background:${color(v)}"></span><span style="flex:1">${n}</span><b>${v}</b><a class="btn" href="#reader" style="text-decoration:none;padding:2px 10px">Fix</a></div>`).join('');
+
+renderLang(); renderNotes(); route();
+</script>
+</body>
+</html>

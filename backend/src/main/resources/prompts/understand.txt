@@ -1,0 +1,13 @@
+<document title="{{title}}" page="{{page}}">
+{{text}}
+</document>
+
+Explain this page to me. Style: {{style}}.
+
+Write these sections in this order. Put each marker line exactly as shown, on its own line.
+
+First (no marker): the simple English explanation in markdown. Short paragraphs, same order of ideas as the page.
+{{native}}
+<<<TERMS>>>
+3 to 6 technical terms that appear on this page, one per line, formatted exactly as:
+term :: one-sentence simple meaning

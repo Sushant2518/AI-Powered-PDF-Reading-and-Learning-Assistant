@@ -1,0 +1,43 @@
+server:
+  address: 127.0.0.1   # localhost only: there is no login
+  port: 8080
+
+spring:
+  application.name: samajh
+  config.import: optional:file:.env[.properties]   # ANTHROPIC_API_KEY=... (git-ignored)
+  web.error.include-message: always   # our ResponseStatusException reasons are written for the UI
+  jackson.deserialization.fail-on-null-for-primitives: false   # omitted boolean/int fields default to false/0
+  datasource:
+    url: jdbc:postgresql://localhost:5433/samajh
+    username: samajh
+    password: samajh
+  jpa:
+    hibernate.ddl-auto: validate   # Flyway owns the schema
+    open-in-view: false
+  servlet.multipart:
+    max-file-size: 100MB
+    max-request-size: 100MB
+
+samajh:
+  storage-dir: ./data/pdfs
+  frontend-origin: http://localhost:3000
+  ai:
+    # Haiku 5.5 for everything: ~$1 per 1,000 pages. For deeper answers switch to
+    # claude-sonnet-5-5 (input 2.00 / output 10.00) or claude-opus-5-5 (4.00 / 20.00).
+    model: claude-haiku-5-5
+    # USD per million tokens for the model above (Haiku price for prompts up to 100K tokens)
+    input-price: 0.10
+    output-price: 0.50
+    # Model for bulk generation (practice questions)
+    fast-model: claude-haiku-5-5
+    fast-input-price: 0.10
+    fast-output-price: 0.50
+    web-search-price: 0.01   # USD per search ($10 per 1,000)
+    # The monthly budget lives in the settings table (Settings page).
+    # "Beyond the PDF" only searches these sites (subdomains included).
+    trusted-domains: >-
+      developer.mozilla.org, w3.org, rfc-editor.org, ietf.org, owasp.org, nist.gov, cve.org, portswigger.net,
+      docs.spring.io, spring.io, openjdk.org, docs.oracle.com, react.dev, nextjs.org, typescriptlang.org, nodejs.org,
+      python.org, pytorch.org, huggingface.co, arxiv.org, acm.org, usenix.org, postgresql.org, redis.io, apache.org,
+      kubernetes.io, docker.com, cloud.google.com, aws.amazon.com, learn.microsoft.com, docs.anthropic.com,
+      martinfowler.com, engineering.fb.com, netflixtechblog.com, blog.cloudflare.com, github.blog, jepsen.io, research.google
