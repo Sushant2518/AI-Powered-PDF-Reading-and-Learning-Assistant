@@ -21,7 +21,8 @@ import tools.jackson.databind.json.JsonMapper;
 
 /**
  * Google Gemini API (free tier) over plain REST: {@code generateContent} / {@code streamGenerateContent?alt=sse}.
- * Free-tier Google Search grounding needs {@code gemini-2.5-flash} (or -lite); usage is logged with cost 0.
+ * Usage is logged with cost 0. Google Search (for "Beyond the PDF") is off unless {@code samajh.ai.gemini.search=true}:
+ * the free tier doesn't include it for new keys.
  */
 @Component
 class GeminiClient implements AiProvider {
@@ -34,20 +35,20 @@ class GeminiClient implements AiProvider {
     private final String apiKey;
     private final String baseUrl;
     private final String model;
-    private final String searchModel;
+    private final boolean search;
     private final List<String> trustedDomains;
 
     GeminiClient(JsonMapper json,
                  @Value("${GEMINI_API_KEY:}") String apiKey,
                  @Value("${samajh.ai.gemini.base-url}") String baseUrl,
                  @Value("${samajh.ai.gemini.model}") String model,
-                 @Value("${samajh.ai.gemini.search-model}") String searchModel,
+                 @Value("${samajh.ai.gemini.search:false}") boolean search,
                  @Value("${samajh.ai.trusted-domains}") List<String> trustedDomains) {
         this.json = json;
         this.apiKey = apiKey;
         this.baseUrl = baseUrl;
         this.model = model;
-        this.searchModel = searchModel;
+        this.search = search;
         this.trustedDomains = trustedDomains;
     }
 
@@ -99,9 +100,13 @@ class GeminiClient implements AiProvider {
 
     @Override
     public SourcedText webSearch(String system, String user, Consumer<Usage> usage) {
+        if (!search) {
+            throw new AiService.UserFacingException("Beyond the PDF needs web search, which Gemini's free tier doesn't include. "
+                    + "Everything else works; switch to Claude in Settings to use Beyond.");
+        }
         Map<String, Object> body = body(system, List.of(Map.of("text", user)));
         body.put("tools", List.of(Map.of("google_search", Map.of())));
-        Reply reply = complete(searchModel, body, usage);
+        Reply reply = complete(model, body, usage);
         JsonNode grounding = reply.candidate().path("groundingMetadata");
         List<SourcedText.Chunk> chunks = new ArrayList<>();
         for (JsonNode c : grounding.path("groundingChunks")) {
@@ -172,11 +177,16 @@ class GeminiClient implements AiProvider {
         HttpRequest request = HttpRequest.newBuilder(URI.create(baseUrl + "/v1beta/models/" + m + ":" + method))
                 .header("Content-Type", "application/json")
                 .header("x-goog-api-key", apiKey)
-                .timeout(Duration.ofMinutes(3))
+                .timeout(Duration.ofMinutes(5))   // the free tier can take minutes when busy
                 .POST(HttpRequest.BodyPublishers.ofString(json.writeValueAsString(body)))
                 .build();
         try {
             HttpResponse<B> response = http.send(request, handler);
+            if (response.statusCode() == 503) {   // "high demand" on the free tier is usually brief: retry once
+                if (response.body() instanceof Stream<?> lines) lines.close();
+                Thread.sleep(2000);
+                response = http.send(request, handler);
+            }
             if (response.statusCode() >= 400) {
                 String message = "";
                 if (response.body() instanceof String s) message = s;
@@ -186,6 +196,8 @@ class GeminiClient implements AiProvider {
                 throw error(response.statusCode(), message);
             }
             return response;
+        } catch (java.net.http.HttpTimeoutException e) {
+            throw new AiService.UserFacingException("Gemini's free tier is very slow right now and didn't answer in time. Try again in a few minutes.");
         } catch (IOException e) {
             throw new AiService.UserFacingException("Could not reach Gemini: " + e.getMessage());
         } catch (InterruptedException e) {
@@ -200,7 +212,8 @@ class GeminiClient implements AiProvider {
         if (status == 401 || status == 403 || m.contains("API key")) {
             return new AiService.UserFacingException("Invalid Gemini API key. Check GEMINI_API_KEY in backend/.env and restart the backend.");
         }
-        if (status == 503 || status == 500) return new AiService.UserFacingException("Gemini is busy. Try again in a moment.");
+        if (status == 503 || status == 500) return new AiService.UserFacingException("Gemini is busy right now (high demand on the free tier). Try again in a moment.");
+        if (status == 404) return new AiService.UserFacingException("Gemini model not available for this key. Check samajh.ai.gemini.model in application.yml.");
         return new AiService.UserFacingException("Gemini API error (" + status + "). Try again.");
     }
 

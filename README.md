@@ -27,7 +27,7 @@ Uploaded PDFs are stored in `backend/data/pdfs/` (git-ignored).
    GEMINI_API_KEY=your-key
    ```
 
-Uses `gemini-2.5-flash` (its free tier includes Google Search for 🌐 Beyond the PDF). Free-tier limits are per minute and per day; when hit, the app says so. Turning *Auto-explain* off saves requests. On the free tier Google may use what you send to improve its products, so don't upload confidential PDFs. Gemini searches the whole web, and the app keeps only statements sourced from the trusted sites in `application.yml`.
+Uses `gemini-3.8-flash` (Google closed the 2.5 models to new keys). Everything works except **🌐 Beyond the PDF**: Google Search is not in the free tier for new keys, so Beyond shows a message (set `samajh.ai.gemini.search: true` only if you enable billing on your Google project). The free tier can be slow at busy times (sometimes a minute or more) and has per-minute and per-day limits; the app tells you when it hits them. Turning *Auto-explain* off saves requests. On the free tier Google may use what you send to improve its products, so don't upload confidential PDFs.
 
 **Claude, paid.** About $1 per 1,000 explained pages with `claude-haiku-5-5`. Add `ANTHROPIC_API_KEY=sk-ant-...` to `backend/.env`, choose Claude in Settings, and set a monthly budget (default $5; AI stops when reached). For deeper answers set `samajh.ai.model` to `claude-sonnet-5-5` or `claude-opus-5-5` and update the prices next to it.
 

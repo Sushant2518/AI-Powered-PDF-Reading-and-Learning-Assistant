@@ -44,12 +44,7 @@ class OcrController {
         Document doc = documents.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         if (n < 1 || n > doc.getPageCount()) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
 
-        String text;
-        try {
-            text = ai.ocr(renderPage(storageDir.resolve(doc.getFileName()), n));
-        } catch (AiService.UserFacingException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, e.getMessage());
-        }
+        String text = ai.ocr(renderPage(storageDir.resolve(doc.getFileName()), n));
         if (text.isBlank()) throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_CONTENT, "No text found on this page image");
 
         jdbc.sql("UPDATE pages SET text = ?, needs_ocr = false, ocr = true, concepts_extracted = false WHERE document_id = ? AND page_number = ?")
