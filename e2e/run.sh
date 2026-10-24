@@ -30,7 +30,7 @@ node e2e/fake-claude.mjs "$TMP/claude-requests.jsonl" & PIDS+=($!); disown
 
 echo "› backend on :8080 (fakes, e2e database)"
 (cd backend && SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5433/samajh_e2e SAMAJH_STORAGE_DIR="$TMP/pdfs" \
-  GEMINI_API_KEY=fake-key SAMAJH_AI_GEMINI_BASE_URL=http://127.0.0.1:9098 \
+  GEMINI_API_KEY=fake-key SAMAJH_AI_GEMINI_BASE_URL=http://127.0.0.1:9098 SAMAJH_AI_GEMINI_SEARCH=true \
   ANTHROPIC_BASE_URL=http://127.0.0.1:9099 ANTHROPIC_API_KEY=fake-key ./mvnw -q spring-boot:run > "$TMP/backend.log" 2>&1) & PIDS+=($!); disown
 
 if ! curl -sf -o /dev/null localhost:3000; then
