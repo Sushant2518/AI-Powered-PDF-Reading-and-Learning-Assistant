@@ -24,6 +24,29 @@ final class RecordSchema {
                 "additionalProperties", false);
     }
 
+    /**
+     * Throws if a parsed answer is missing fields (null), also inside lists of records.
+     * Small models sometimes drop or rename a field; callers treat this like malformed JSON and retry.
+     */
+    static <T> T requireComplete(T value) {
+        if (value == null) throw new IllegalArgumentException("empty answer");
+        if (!value.getClass().isRecord()) return value;
+        for (RecordComponent c : value.getClass().getRecordComponents()) {
+            Object v;
+            try {
+                var accessor = c.getAccessor();
+                accessor.setAccessible(true);   // answer records are package-private in other packages
+                v = accessor.invoke(value);
+            } catch (ReflectiveOperationException e) {
+                throw new IllegalStateException(e);
+            }
+            if (v == null) throw new IllegalArgumentException("missing field: " + c.getName());
+            if (v instanceof List<?> list) list.forEach(RecordSchema::requireComplete);
+            else requireComplete(v);
+        }
+        return value;
+    }
+
     private static Map<String, Object> type(Type t) {
         if (t instanceof ParameterizedType p && p.getRawType() == List.class) {
             return Map.of("type", "array", "items", type(p.getActualTypeArguments()[0]));

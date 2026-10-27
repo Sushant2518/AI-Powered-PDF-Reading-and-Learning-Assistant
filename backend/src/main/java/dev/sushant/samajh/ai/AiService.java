@@ -6,8 +6,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 /**
- * The only entry point for AI: uses Gemini (free tier) or Claude (paid), chosen in Settings.
- * Logs token usage and enforces the monthly budget (Claude only; Gemini's free tier costs nothing).
+ * The only entry point for AI: Gemini (free tier), Claude (paid) or a local model (Ollama, free), chosen in Settings.
+ * Logs token usage and enforces the monthly budget (Claude only; the others cost nothing).
  */
 @Service
 public class AiService {
@@ -23,9 +23,7 @@ public class AiService {
     public enum Effort { LOW, MEDIUM }
 
     /** The single row of the settings table. */
-    public record Settings(String provider, double monthlyBudgetUsd) {
-        public boolean gemini() { return "gemini".equals(provider); }
-    }
+    public record Settings(String provider, String localModel, double monthlyBudgetUsd) {}
 
     private static final String OCR_PROMPT = """
             Transcribe all the text on this book page exactly as printed, keeping paragraphs and line breaks.
@@ -34,16 +32,18 @@ public class AiService {
     private final JdbcTemplate jdbc;
     private final ClaudeClient claude;
     private final GeminiClient gemini;
+    private final LocalClient local;
 
-    AiService(JdbcTemplate jdbc, ClaudeClient claude, GeminiClient gemini) {
+    AiService(JdbcTemplate jdbc, ClaudeClient claude, GeminiClient gemini, LocalClient local) {
         this.jdbc = jdbc;
         this.claude = claude;
         this.gemini = gemini;
+        this.local = local;
     }
 
     public Settings settings() {
-        return jdbc.queryForObject("SELECT provider, monthly_budget_usd FROM settings WHERE id = 1",
-                (rs, i) -> new Settings(rs.getString(1), rs.getDouble(2)));
+        return jdbc.queryForObject("SELECT provider, local_model, monthly_budget_usd FROM settings WHERE id = 1",
+                (rs, i) -> new Settings(rs.getString(1), rs.getString(2), rs.getDouble(3)));
     }
 
     /** The model answering right now (stored next to cached results). */
@@ -79,6 +79,9 @@ public class AiService {
         return provider().structured(system, user, type, fast, logUsage(feature));
     }
 
+    /** Whether the current provider can do web search (for "Beyond the PDF"). */
+    public boolean canSearch() { return provider().canSearch(); }
+
     /** Web-search answer limited to trusted sites; every statement has a source. */
     public SourcedText webSearch(String feature, String system, String user) {
         return provider().webSearch(system, user, logUsage(feature));
@@ -92,9 +95,10 @@ public class AiService {
     /** The provider from Settings; refuses Claude calls once the monthly budget is spent. */
     private AiProvider provider() {
         Settings s = settings();
-        if (s.gemini()) return gemini;
+        if ("gemini".equals(s.provider())) return gemini;
+        if ("local".equals(s.provider())) return local;
         if (spentThisMonth() >= s.monthlyBudgetUsd()) {
-            throw new UserFacingException("Monthly Claude budget of $%.0f reached. Raise it in Settings, or switch to Gemini (free)."
+            throw new UserFacingException("Monthly Claude budget of $%.0f reached. Raise it in Settings, or switch to Gemini or Local (free)."
                     .formatted(s.monthlyBudgetUsd()));
         }
         return claude;

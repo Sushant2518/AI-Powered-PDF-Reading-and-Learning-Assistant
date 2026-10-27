@@ -142,9 +142,10 @@ Mastery is computed on read from attempts + flashcard reviews (`Mastery.java`, u
 | Provider | Default model | Cost | Web search for Beyond |
 |---|---|---|---|
 | **Gemini (default)** | `gemini-3.8-flash` (`samajh.ai.gemini.model`; 2.5 models are closed to new keys) | Free tier: no card; per-minute/per-day limits; slow at busy times; Google may use content | Off by default (`samajh.ai.gemini.search: false`): Google Search isn't in the free tier for new keys. With billing on: grounding, filtered by `SourcedText.fromGrounding` to trusted domains |
+| Local (Ollama) | `qwen3.5:4b` (Settings; `qwen3.5:2b` if slow, 8 GB RAM) | Free, offline, private; slower and shallower | None: Ask skips Beyond, the Beyond tab explains |
 | Claude | `claude-haiku-5-5` (`samajh.ai.model`; Sonnet/Opus for depth) | ~$1 per 1,000 pages; monthly budget in Settings | `web_search` tool with `allowed_domains`; fallback + `pause_turn` handled |
 
-Code: `AiService` (facade: settings, budget, usage log) → `AiProvider` → `GeminiClient` (plain REST: `generateContent`, `streamGenerateContent?alt=sse`, `responseJsonSchema` from `RecordSchema`, `thinkingBudget 0` for quick explanations, `inline_data` for OCR) or `ClaudeClient` (anthropic-java SDK).
+Code: `AiService` (facade: settings, budget, usage log) → `AiProvider` → `LocalClient` (Ollama `/api/chat`: NDJSON stream, `format` JSON schema, `images` for OCR, `think:false` for quick explanations, `num_ctx` 8192), `GeminiClient` (plain REST: `generateContent`, `streamGenerateContent?alt=sse`, `responseJsonSchema` from `RecordSchema`, `thinkingBudget 0` for quick explanations, `inline_data` for OCR) or `ClaudeClient` (anthropic-java SDK).
 Errors are mapped to UI messages: missing/invalid key, free-tier limit (429), declined (safety), busy.
 
 ### 4.2 "From your PDF": page citations
@@ -358,7 +359,7 @@ frontend/
 | 4 | Beyond the PDF + Ask | ✅ Done |
 | 5 | Practice + flashcards + mastery | ✅ Done |
 | 6 | Polish: OCR, settings, dark/light, mobile, E2E (`e2e/run.sh`) | ✅ Done |
-| 7 | Local model (Ollama) | ❌ Built, then removed by decision |
+| 7 | Local model (Ollama) | ✅ Back as a third provider (switch in Settings) |
 | 8 | Gemini free tier as provider (switch in Settings) | ✅ Done |
 | — | Real Gemini run (3.8 Flash): Understand EN+MR, concepts, Deepen, Ask, practice, grading, OCR verified | ✅ Done; prompt tuning on DDIA next |
 | R2 | Knowledge map, cross-PDF links, hands-on tasks, system design practice, gap finder | Later |

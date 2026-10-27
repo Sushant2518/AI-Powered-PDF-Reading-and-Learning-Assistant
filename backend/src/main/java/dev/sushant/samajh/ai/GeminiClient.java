@@ -53,6 +53,9 @@ class GeminiClient implements AiProvider {
     }
 
     @Override
+    public boolean canSearch() { return search; }
+
+    @Override
     public String model() { return model; }
 
     @Override
@@ -90,7 +93,7 @@ class GeminiClient implements AiProvider {
         for (int attempt = 0; attempt < 2; attempt++) {   // retry once: models occasionally break the JSON
             Chunk reply = complete(model, body, usage).chunk();
             try {
-                return json.readValue(reply.text(), type);
+                return RecordSchema.requireComplete(json.readValue(reply.text(), type));
             } catch (RuntimeException e) {
                 last = e;
             }

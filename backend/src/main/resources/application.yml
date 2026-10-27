@@ -22,12 +22,14 @@ samajh:
   storage-dir: ./data/pdfs
   frontend-origin: http://localhost:3000
   ai:
-    # Provider (gemini | claude) and the Claude budget live in the settings table (Settings page).
+    # Provider (gemini | claude | local), local model and Claude budget live in the settings table (Settings page).
     gemini:
       base-url: https://generativelanguage.googleapis.com
       model: gemini-3.8-flash   # free tier (2.5 models are closed to new API keys)
       # Google Search for "Beyond the PDF" is not in the free tier for new keys. Set true only with billing enabled.
       search: false
+    local:
+      url: http://localhost:11434   # Ollama; the model is chosen in Settings
     # Claude: Haiku 5.5 for everything: ~$1 per 1,000 pages. For deeper answers switch to
     # claude-sonnet-5-5 (input 2.00 / output 10.00) or claude-opus-5-5 (4.00 / 20.00).
     model: claude-haiku-5-5

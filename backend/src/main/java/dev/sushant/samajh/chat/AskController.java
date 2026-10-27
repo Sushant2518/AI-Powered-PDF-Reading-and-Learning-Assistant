@@ -116,7 +116,8 @@ class AskController {
         return Sse.stream(out -> {
             Answer answer = Answer.parse(ai.stream("ask", Prompts.SYSTEM, user, AiService.Effort.LOW, out).text());
             SourcedText beyond = null;
-            if (req.allowBeyond() && !answer.beyondQuery().isEmpty()) {
+            // Only go Beyond when the provider can search; otherwise the PDF answer stands alone (no wasted request).
+            if (req.allowBeyond() && !answer.beyondQuery().isEmpty() && ai.canSearch()) {
                 out.event("beyond_searching", Map.of("query", answer.beyondQuery()));
                 try {
                     beyond = ai.webSearch("ask-beyond", Prompts.SYSTEM, Prompts.render("ask-beyond", Map.of(

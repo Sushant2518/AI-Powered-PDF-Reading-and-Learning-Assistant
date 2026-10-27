@@ -62,6 +62,9 @@ class ClaudeClient implements AiProvider {
     }
 
     @Override
+    public boolean canSearch() { return true; }
+
+    @Override
     public String model() { return model; }
 
     @Override

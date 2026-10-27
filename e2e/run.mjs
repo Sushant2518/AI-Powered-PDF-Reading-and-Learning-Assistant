@@ -1,6 +1,6 @@
 // The whole mastery loop in a real browser (Chrome DevTools Protocol, no extra dependencies):
 // upload → Understand → selection Explain → Deepen → note → Ask (+ Beyond) → Practice → Mastery.
-// Usage: node run.mjs <pdf> <out-dir> <gemini|claude>
+// Usage: node run.mjs <pdf> <out-dir> <gemini|claude|local>
 import fs from 'node:fs';
 
 const [, , pdfPath, outDir, provider = 'gemini'] = process.argv;
@@ -115,8 +115,15 @@ await step('Ask answers from the PDF and goes Beyond with sources', async () => 
   await ev(`(() => { const i = document.querySelector('aside form input'); Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(i, 'Why are retries safe?'); i.dispatchEvent(new Event('input', { bubbles: true })); })()`);
   await sleep(100);
   await ev(`document.querySelector('aside form').requestSubmit()`);
-  await waitFor(`document.querySelector('aside')?.innerText.includes('BEYOND THE PDF')`, 'beyond block');
-  await waitFor(`document.querySelectorAll('aside a[target=_blank]').length > 0`, 'source link');
+  if (provider === 'local') {
+    // No web search locally: the PDF answer stands alone, and no Beyond request is made.
+    await waitFor(`document.querySelector('aside')?.innerText.includes('Retries are safe')`, 'PDF answer');
+    await waitFor(`[...document.querySelectorAll('aside button')].some(b => b.textContent.startsWith('›'))`, 'follow-up chips (answer finished)');
+    if (await ev(`document.querySelector('aside')?.innerText.includes('BEYOND THE PDF')`)) throw new Error('Beyond shown for local');
+  } else {
+    await waitFor(`document.querySelector('aside')?.innerText.includes('BEYOND THE PDF')`, 'beyond block');
+    await waitFor(`document.querySelectorAll('aside a[target=_blank]').length > 0`, 'source link');
+  }
   await shot(`ask-${provider}`);
 });
 
@@ -143,7 +150,7 @@ await step('Mastery dashboard shows the practised concept', async () => {
 
 await step('Settings page shows both providers', async () => {
   await open('/settings');
-  await waitFor(`document.querySelector('main')?.innerText.includes('Gemini (free)') && document.querySelector('main')?.innerText.includes('Claude (paid)')`, 'provider options');
+  await waitFor(`['Gemini (free)', 'Claude (paid)', 'Local (free, offline)'].every(t => document.querySelector('main')?.innerText.includes(t))`, 'provider options');
   // The Claude budget only matters (and only shows) when Claude is the provider.
   const budgetShown = await ev(`document.querySelector('main')?.innerText.includes('Monthly Claude budget')`);
   if (budgetShown !== (provider === 'claude')) throw new Error(`budget field shown=${budgetShown} for ${provider}`);

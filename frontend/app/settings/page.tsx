@@ -21,7 +21,7 @@ export default function SettingsPage() {
     if (!server) return;
     setStatus("Saving…");
     try {
-      setServer(await api.saveSettings({ provider: server.provider, monthlyBudgetUsd: server.monthlyBudgetUsd }));
+      setServer(await api.saveSettings({ provider: server.provider, localModel: server.localModel, monthlyBudgetUsd: server.monthlyBudgetUsd }));
       notifyUsage();
       setStatus("✓ Saved");
     } catch (e) {
@@ -81,7 +81,32 @@ export default function SettingsPage() {
                 <span className="text-muted">About $1 per 1,000 pages. Needs <code>ANTHROPIC_API_KEY=...</code> in <code>backend/.env</code>.</span>
               </span>
             </label>
+            <label className="flex gap-2 rounded-lg border border-border p-3">
+              <input type="radio" checked={server.provider === "local"} onChange={() => setServer({ ...server, provider: "local" })} />
+              <span>
+                <b>Local (free, offline)</b> <span className="text-muted">via Ollama</span><br />
+                <span className="text-muted">Runs on this Mac: no key, no limits, private. Slower and less deep than Gemini/Claude (especially Marathi/Hindi), and no Beyond the PDF.</span>
+              </span>
+            </label>
           </div>
+
+          {server.provider === "local" && (
+            <div className="space-y-2">
+              <Row label="Local model">
+                <input list="local-models" value={server.localModel} onChange={(e) => setServer({ ...server, localModel: e.target.value })}
+                       className={`${input} w-40`} />
+                <datalist id="local-models">
+                  <option value="qwen3.5:4b">Best balance (3.3 GB, reads images)</option>
+                  <option value="qwen3.5:2b">Lighter and faster (2.7 GB)</option>
+                </datalist>
+              </Row>
+              <div className="rounded-lg bg-background p-3 text-xs text-muted">
+                For an 8 GB Mac: <b>qwen3.5:4b</b> (best balance, reads page images) · <b>qwen3.5:2b</b> (if it feels slow).
+                One-time setup in a terminal:
+                <pre className="mt-1 whitespace-pre-wrap font-mono text-foreground">brew install ollama{"\n"}ollama serve &amp;{"\n"}ollama pull {server.localModel || "qwen3.5:4b"}</pre>
+              </div>
+            </div>
+          )}
 
           {server.provider === "claude" && (
             <Row label="Monthly Claude budget ($)">

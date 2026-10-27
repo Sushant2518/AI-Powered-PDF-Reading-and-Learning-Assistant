@@ -1,6 +1,8 @@
 package dev.sushant.samajh.ai;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
 import java.util.Map;
@@ -24,5 +26,13 @@ class RecordSchemaTest {
         assertEquals(Map.of("type", "array", "items", Map.of("type", "string")), props.get("options"));
         assertEquals(Map.of("type", "integer"), props.get("answerIndex"));
         assertEquals(List.of("type", "prompt", "options", "answerIndex"), item.get("required"));
+    }
+
+    @Test
+    void rejectsAnswersWithMissingFieldsAtAnyDepth() {
+        var ok = new Set(List.of(new Item(Kind.MCQ, "q", List.of("a"), 0)));
+        assertSame(ok, RecordSchema.requireComplete(ok));
+        assertThrows(IllegalArgumentException.class, () -> RecordSchema.requireComplete(new Set(null)));
+        assertThrows(IllegalArgumentException.class, () -> RecordSchema.requireComplete(new Set(List.of(new Item(Kind.MCQ, null, List.of(), 0)))));
     }
 }

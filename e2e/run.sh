@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# End-to-end test against fake Gemini and Claude servers: no API keys, no cost, separate database.
+# End-to-end test against fake Gemini, Claude and Ollama servers: no API keys, no cost, separate database.
 # Needs: Docker (Postgres from docker-compose), Java 21, Node 20+, Google Chrome.
 # Stop your normal backend first (this one uses port 8080 too). Usage: ./e2e/run.sh
 set -euo pipefail
@@ -24,8 +24,13 @@ echo "› fresh database samajh_e2e"
 docker compose up -d postgres >/dev/null
 docker compose exec -T postgres psql -U samajh -d samajh -qc "DROP DATABASE IF EXISTS samajh_e2e" -c "CREATE DATABASE samajh_e2e" >/dev/null
 
-echo "› fake Gemini on :9098, fake Claude on :9099"
+if lsof -iTCP:11434 -sTCP:LISTEN >/dev/null 2>&1; then
+  echo "Port 11434 is in use (real Ollama?). Stop it (pkill -f 'ollama serve') for the test, then re-run."; exit 1
+fi
+
+echo "› fake Gemini on :9098, fake Claude on :9099, fake Ollama on :11434"
 node e2e/fake-gemini.mjs "$TMP/gemini-requests.jsonl" & PIDS+=($!); disown
+node e2e/fake-ollama.mjs "$TMP/ollama-requests.jsonl" & PIDS+=($!); disown
 node e2e/fake-claude.mjs "$TMP/claude-requests.jsonl" & PIDS+=($!); disown
 
 echo "› backend on :8080 (fakes, e2e database)"
@@ -41,12 +46,12 @@ for i in $(seq 1 90); do curl -sf -o /dev/null localhost:8080/api/usage && curl 
 
 CHROME=${CHROME:-"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"}
 "$CHROME" --headless --remote-debugging-port=9333 --user-data-dir="$TMP/chrome" about:blank >/dev/null 2>&1 & PIDS+=($!); disown
-sleep 2
+for i in $(seq 1 30); do curl -sf -o /dev/null localhost:9333/json/version && break; sleep 1; done   # cold starts can take a while
 
-for provider in gemini claude; do
+for provider in gemini claude local; do
   echo "› running the flow with $provider"
   if ! node e2e/run.mjs "$ROOT/e2e/sample.pdf" "$TMP" "$provider"; then
     echo "❌ E2E failed ($provider). Logs and screenshots in $TMP"; exit 1
   fi
 done
-echo "✅ E2E passed for Gemini and Claude"
+echo "✅ E2E passed for Gemini, Claude and Local"

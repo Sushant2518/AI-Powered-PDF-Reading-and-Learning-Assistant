@@ -16,6 +16,9 @@ interface AiProvider {
     /** One answer parsed into the record {@code type}; {@code fast} = cheaper model for bulk generation. */
     <T> T structured(String system, String user, Class<T> type, boolean fast, Consumer<Usage> usage);
 
+    /** Whether {@link #webSearch} works (Claude; Gemini only with paid search; never locally). */
+    boolean canSearch();
+
     /** Web-search answer where every statement has a source on a trusted domain. */
     SourcedText webSearch(String system, String user, Consumer<Usage> usage);
 

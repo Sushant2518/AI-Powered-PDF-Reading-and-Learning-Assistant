@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { api, type Usage } from "@/lib/api";
 
-/** Gemini requests today, or Claude spend this month. Refreshes whenever an AI call finishes (`ai-usage` window event). */
+/** Gemini requests today, the local model, or Claude spend this month. Refreshes whenever an AI call finishes (`ai-usage` window event). */
 export default function UsageMeter() {
   const [usage, setUsage] = useState<Usage | null>(null);
 
@@ -15,6 +15,9 @@ export default function UsageMeter() {
   }, []);
 
   if (!usage) return null;
+  if (usage.provider === "local") {
+    return <span className="text-xs text-muted" title="Free local model via Ollama">Local · {usage.localModel} · free</span>;
+  }
   if (usage.provider === "gemini") {
     return <span className="text-xs text-muted" title="Gemini free tier: requests made today">Gemini · free · {usage.geminiRequestsToday} today</span>;
   }
